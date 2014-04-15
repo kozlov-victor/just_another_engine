@@ -102,7 +102,7 @@ var GLOBAL = (function () {
                 var _self = this;
                 _self._events.push(ev);
                 _self.t+=10;
-                ev.onload = setTimeout(function () {
+                /*ev.onload = setTimeout(function () {
                     GLOBAL._onDOMReady(function () {
                         ev.flagLoaded = true;
                         if (onCompleteFn) {
@@ -122,8 +122,28 @@ var GLOBAL = (function () {
                             }
                         }
                     }, 10);
-                },_self.t);
-
+                },_self.t);*/
+                ev.onload = function () {
+                    GLOBAL._onDOMReady(function () {
+                        ev.flagLoaded = true;
+                        if (onCompleteFn) {
+                            onCompleteFn();
+                        }
+                        _self.checkForCallBack();
+                        if (_self._progressFn) {
+                            var completed;
+                            if (_self._events.length == 0) {
+                                completed = 0;
+                            }
+                            else {
+                                var completedEvents = _self.getCompletedEvents();
+                                var allEvents = _self._events.length;
+                                completed = completedEvents / allEvents;
+                                _self._progressFn(completed);
+                            }
+                        }
+                    }, 10);
+                };
             },
             setOnCompleteFn:function (fn) {
                 this._callBackFn = fn;
