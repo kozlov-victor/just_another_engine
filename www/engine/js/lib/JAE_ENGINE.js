@@ -155,7 +155,6 @@ var ENGINE = (function () {
                     var scrX, scrY;
                     if (e.touches) {
                         var touches = e.touches;
-                        console.log('touches', touches);
                         for (var i = touches.length - 1; i >= 0; i--) {
                             var touch = touches[i];
                             scrX = touch.pageX;
@@ -163,8 +162,8 @@ var ENGINE = (function () {
                             dispatchOneTouch(opName, scrX, scrY, objects);
                         }
                     } else {
-                        scrX = e.x;
-                        scrY = e.y;
+                        scrX = e.pageX;
+                        scrY = e.pageY;
                         dispatchOneTouch(opName, scrX, scrY, objects);
                     }
                 }
