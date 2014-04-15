@@ -1,0 +1,36 @@
+
+@import "basicAndroid.css";
+
+html {
+    background-repeat: repeat;
+    color: black;
+    background-color: black;
+}
+
+button {
+    padding: 10px;
+    margin: 5px;
+    background-color: #b9b9b9;
+    display: block;
+    border: 1px solid grey;
+    box-shadow: 0 0 10px black inset;
+    border-radius: 5px;
+}
+
+.noDisplay {
+    display: none;
+}
+
+.clear {
+    clear: both;
+}
+
+button:disabled {
+    opacity: 0.5;
+}
+
+div,button,span {
+    transition: background ease 0.5s;
+}
+
+

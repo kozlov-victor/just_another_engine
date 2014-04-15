@@ -1,0 +1,85 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width,
+        minimum-scale=1,
+        initial-scale=1,
+        maximum-scale=1,
+        user-scalable=no
+        target-densityDpi=device-dpi"
+    />
+    <meta charset="utf-8"/>
+    <script type="text/javascript" src="../../engine/js/lib/oop.js"></script>
+    <script type="text/javascript" src="../../engine/js/lib/JAE_CORE.js"></script>
+    <script type="text/javascript" src="../../engine/js/lib/JAE_ENGINE.js"></script>
+    <script type="text/javascript" src="../../engine/js/data/data.js"></script>
+    <link type="text/css" rel="stylesheet" href="../../engine/css/common.css">
+</head>
+<body>
+    <script type="text/javascript">
+
+        var BASE_URL = GLOBAL.BASE_URL+ 'projects/particleSystem/res/';
+
+        var introScene = new ENGINE.Scene();
+        var obj_logo = new ENGINE.GameObject(BASE_URL+'css/images/logo.png',introScene);
+        var lbl = new ENGINE.UI.TextLabel(introScene,'JAE');
+        var particlesGreen = new ENGINE.ParticleSystem(
+                {
+                    strUrl: BASE_URL +'css/images/particle.png',
+                    scene : introScene,
+                    posDispersionPx: 50,
+                    compositeOperation: ENGINE.COMPOSITE_OPERATIONS.DESTINATION,
+                    force: 10,
+                    mass: 0.5
+                }
+        );
+        var particlesRed = new ENGINE.ParticleSystem(
+                {
+                    strUrl: BASE_URL +'css/images/particle2.png',
+                    scene : introScene,
+                    posDispersionPx: 50,
+                    compositeOperation: ENGINE.COMPOSITE_OPERATIONS.LIGHTER,
+                }
+        );
+
+        ENGINE.SceneManager.setCurrentScene(introScene);
+        ENGINE.SceneManager.setFont(GLOBAL.BASE_URL+'engine/css/images/font.png',FontData);
+        ENGINE.SceneManager.onProgress(function (complete) {
+            //console.log('complete',complete);
+            ENGINE.SceneManager.getContext().fillRect(0, 0, 240, 320, '#000000');
+            ENGINE.SceneManager.getContext().fillRect(0, 0, 240 * (complete), 10, '#00ff00');
+        });
+        ENGINE.SceneManager.onComplete(function() {
+            intro.runIntro();
+        });
+        introScene.onClick(function(e){
+            particlesGreen.splash(e.x, e.y,20);
+            particlesRed.splash(e.x, e.y,20);
+        });
+        introScene.onMouseMove(function(e){
+            particlesGreen.splash(e.x, e.y);
+            particlesRed.splash(e.x, e.y);
+        });
+        var intro = {
+            runIntro: function() {
+                lbl.setCompositeOperation(ENGINE.COMPOSITE_OPERATIONS.SCREEN);
+                lbl.scale(10,1000).rotate(360,20000);
+                lbl.centrate().show(1000);
+                obj_logo.centrate().show(2000);
+                var keyFrames = introScene.createKeyFrames();
+                keyFrames.
+                        addKeyFrame(4000,obj_logo,obj_logo.scale,[10,1500]).
+                        addKeyFrame(5500,obj_logo,obj_logo.scale,[1,1500]).
+                        addKeyFrame(4000,obj_logo,obj_logo.hide,[2000]).
+                        addKeyFrame(5000,lbl,lbl.hide,[2000,function(){console.log('hided>>>')}]).
+                        run();
+            },
+            test: function() {
+
+
+            }
+        }
+
+    </script>
+</body>
+</html>
