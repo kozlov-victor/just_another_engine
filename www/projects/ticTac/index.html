@@ -1,0 +1,399 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width,
+        minimum-scale=1,
+        initial-scale=1,
+        maximum-scale=1,
+        user-scalable=no
+        target-densityDpi=device-dpi"
+            />
+    <!--target-densityDpi=device-dpi-->
+    <meta charset="utf-8"/>
+    <script type="text/javascript" src="../../engine/js/lib/oop.js"></script>
+    <script type="text/javascript" src="../../engine/js/lib/JAE_CORE.js"></script>
+    <script type="text/javascript" src="../../engine/js/lib/JAE_ENGINE.js"></script>
+    <script type="text/javascript" src="../../engine/js/data/data.js"></script>
+    <link type="text/css" rel="stylesheet" href="../../engine/css/common.css">
+
+    <script type="text/javascript">
+
+            var BASE_URL = GLOBAL.BASE_URL+ 'projects/ticTac/res/';
+
+            var mainScene = new ENGINE.Scene();
+            var bg_main = mainScene.loadBackGround(BASE_URL+'css/images/field.png');
+            var obj_title = new ENGINE.GameObject(BASE_URL + 'css/images/title.png', mainScene);
+            var obj_logo = new ENGINE.GameObject(BASE_URL + 'css/images/logo.png', mainScene);
+            var ckBox_easy = new ENGINE.UI.CheckBox(BASE_URL+'css/images/checkBox.png',mainScene);
+            ckBox_easy.setChecked(true);
+            var strLevel='легко';
+            var ui_lbl_easy = new ENGINE.UI.SpriteLabel(BASE_URL+'css/images/easy.png',mainScene);
+            var ui_lbl_mid = new ENGINE.UI.SpriteLabel(BASE_URL+'css/images/mid.png',mainScene);
+            var ckBox_mid = new ENGINE.UI.CheckBox(BASE_URL+'css/images/checkBox.png',mainScene);
+            var ui_lbl_hard = new ENGINE.UI.SpriteLabel(BASE_URL+'css/images/hard.png',mainScene);
+            var ckBox_hard = new ENGINE.UI.CheckBox(BASE_URL+'css/images/checkBox.png',mainScene);
+            var group = new ENGINE.UI.GroupBox();
+            group.addElement(ckBox_easy).addElement(ckBox_mid).addElement(ckBox_hard);
+            ui_lbl_easy.setFor(ckBox_easy);
+            ui_lbl_mid.setFor(ckBox_mid);
+            ui_lbl_hard.setFor(ckBox_hard);
+            var btnPlay = new ENGINE.UI.Button(BASE_URL+'css/images/play.png',mainScene);
+            var objs_x = Array();
+            var objs_o = Array();
+            for (var i=0;i<5;i++) {
+                objs_x[i] = new ENGINE.GameObject(BASE_URL+'css/images/x.png',mainScene);
+                objs_x[i].setFrameSize(80,80);
+                objs_x[i].free = true;
+            }
+            for (i=0;i<5;i++) {
+                objs_o[i] = new ENGINE.GameObject(BASE_URL+'css/images/o.png',mainScene);
+                objs_o[i].setFrameSize(80,80);
+                objs_o[i].free = true;
+            }
+            var obj_done = new ENGINE.GameObject(BASE_URL+'css/images/done.png',mainScene,0);
+            obj_done.setFrameSize(240,240);
+            var obj_resultTitle = new ENGINE.GameObject(BASE_URL+'css/images/resultTitle.png',mainScene,0);
+            obj_resultTitle.setFrameSize(200,50).centrate();
+            var btnBack =  new ENGINE.UI.Button(BASE_URL+'css/images/back.png',mainScene);
+            btnBack.setPos(10,250);
+            var txtLabel = new ENGINE.UI.TextLabel(mainScene,"Легко");
+
+            ENGINE.SceneManager.setCurrentScene(mainScene);
+            ENGINE.SceneManager.setFont(GLOBAL.BASE_URL+'engine/css/images/font.png',FontData);
+            txtLabel.setFontScale(0.7);
+
+            mainScene.setBackGroundColor(0, 12, 0);
+            ENGINE.SceneManager.onProgress(function (complete) {
+                ENGINE.SceneManager.getContext().fillRect(0, 0, 240, 320, '#000000');
+                ENGINE.SceneManager.getContext().fillRect(0, 0, 240 * (complete), 10, '#00ff00');
+            });
+
+
+            ENGINE.SceneManager.onComplete(function () {
+
+                function showLogo() {
+                    obj_logo.centrate();
+                    mainScene.createKeyFrames().
+                            addKeyFrame(0, obj_logo, obj_logo.setOpacity, [1, 3000]).
+                            addKeyFrame(6000, obj_logo, obj_logo.setOpacity, [0, 300]).
+                            addKeyFrame(6500, null, showTitle, []).
+                            run();
+                }
+
+                function showTitle() {
+                    obj_title.centrate();
+                    mainScene.createKeyFrames().
+                            addKeyFrame(0, obj_title, obj_title.show, [500]).
+                            addKeyFrame(1000, obj_title, obj_title.hide, [1000]).
+                            addKeyFrame(2000,null,showMenu,[]).
+                            run();
+                }
+
+                function showMenu() {
+                    bg_main.hide(200);
+                    txtLabel.hide(2000);
+                    var _self = this;
+                    ui_lbl_easy.setPos(-200, 10);
+                    ckBox_easy.setPos(0,10).show(100);
+                    ckBox_mid.setPos(0,100).show(300);
+                    ckBox_hard.setPos(0,190).show(800);
+                    ui_lbl_mid.setPos(200, 90);
+                    ui_lbl_hard.setPos(-200, 180);
+                    btnPlay.centrate().setPosY(-100).show(100).setPosY(260,600);
+                    mainScene.createKeyFrames().
+                            addKeyFrame(0, ui_lbl_easy, ui_lbl_easy.show, [500]).
+                            addKeyFrame(0, ui_lbl_easy,ui_lbl_easy.setPosX, [40, 500]).
+                            addKeyFrame(200, ui_lbl_mid,ui_lbl_mid.show, [500]).
+                            addKeyFrame(200, ui_lbl_mid,ui_lbl_mid.setPosX, [40, 500]).
+                            addKeyFrame(400, ui_lbl_hard,ui_lbl_hard.show, [500]).
+                            addKeyFrame(400, ui_lbl_hard,ui_lbl_hard.setPosX, [40, 500]).
+                            run();
+                    btnPlay.onClick(function(){
+                        showGame();
+                    });
+                }
+
+                btnBack.onClick(function(){
+                    showMenu();
+                    Game.hideAll();
+                    Game.isActive = false;
+                    btnBack.hide(300);
+                });
+
+                function showGame() {
+                    txtLabel.setPos(150,0).show(2000);
+                    ui_lbl_easy.hide(1000);
+                    ckBox_easy.hide(1000);
+                    ui_lbl_mid.hide(1000);
+                    ckBox_mid.hide(1000);
+                    ui_lbl_hard.hide(1000);
+                    ckBox_hard.hide(1000);
+                    btnPlay.hide(1000);
+                    bg_main.show(1000);
+
+                    Game.init();
+                    mainScene.onClick(function(e){
+                        if (!Game.isActive) return;
+                        if (Game.isGameOver) {
+                            Game.init();
+                        } else {
+                            var fieldCoords = Game.screenCoordToFieldCoord(e.x, e.y);
+                            if (Game.field[fieldCoords.y][fieldCoords.x]==0) {
+                                var objX = Game.getXobj();
+                                Game.placeObject(objX,1,mainScene,fieldCoords.x,fieldCoords.y,doOponent);
+
+                            }
+                        }
+                    });
+
+                    var doOponent = function(){
+                        if (Game.isGameOver) return;
+                        Game.doOponent();
+                    }
+
+                }
+
+                var Game = {
+                    field: null,
+                    cellSize: 80,
+                    isGameOver: false,
+                    isActive: false,
+                    level: 0,
+                    lines: [
+                        [{y:0,x:0},{y:0,x:1},{y:0,x:2}],
+                        [{y:1,x:0},{y:1,x:1},{y:1,x:2}],
+                        [{y:2,x:0},{y:2,x:1},{y:2,x:2}],
+                        [{y:0,x:0},{y:1,x:0},{y:2,x:0}],
+                        [{y:0,x:1},{y:1,x:1},{y:2,x:1}],
+                        [{y:0,x:2},{y:1,x:2},{y:2,x:2}],
+                        [{y:0,x:0},{y:1,x:1},{y:2,x:2}],
+                        [{y:0,x:2},{y:1,x:1},{y:2,x:0}],
+                    ],
+                    init: function() {
+                        this.field = [
+                            [0,0,0],
+                            [0,0,0],
+                            [0,0,0]];
+                        this.isGameOver = false;
+                        this.hideAll();
+                        this.isActive = true;
+                    },
+                    hideAll: function(){
+                        for (var i=0;i<5;i++) {
+                            objs_x[i].free = true;
+                            objs_x[i].setFrameCurrent(0).hide(100);
+                        }
+                        for (i=0;i<5;i++) {
+                            objs_o[i].free = true;
+                            objs_o[i].setFrameCurrent(0).hide(100);
+                        }
+                        obj_done.hide(100);
+                        obj_resultTitle.hide(100);
+                        btnBack.hide(200);
+                    },
+                    screenCoordToFieldCoord: function(x,y){
+                        var cellSize = this.cellSize;
+                        if (y>cellSize*3) return null;
+                        return {x:parseInt(x/cellSize),y:parseInt(y/cellSize)};
+                    },
+                    fieldCoordToScreenCoord: function(x,y) {
+                        var cellSize = this.cellSize;
+                        return {x:x*cellSize,y:y*cellSize};
+                    },
+                    getXobj: function() {
+                        for (var i=0;i<5;i++) {
+                            if (objs_x[i].free) {
+                                objs_x[i].free = false;
+                                return objs_x[i];
+                            }
+                        }
+                        return null;
+                    },
+                    getOobj: function() {
+                        for (var i=0;i<5;i++) {
+                            if (objs_o[i].free) {
+                                objs_o[i].free = false;
+                                return objs_o[i];
+                            }
+                        }
+                        return null;
+                    },
+                    placeObject: function(obj,fieldValue,scene,fieldX,fieldY,callBack) {
+                        var objCoords = this.fieldCoordToScreenCoord(fieldX,fieldY);
+                        obj.setPos(objCoords.x,objCoords.y).show(200);
+                        this.field[fieldY][fieldX] = fieldValue;
+                        this.animatePlaceObject(obj,scene,callBack);
+                        var winnerRes = this.resolveWinner();
+                        var drawRes = false;
+                        if (!winnerRes.res) {
+                            drawRes = this.resolveDraw();
+                        }
+                        if (winnerRes.res) {
+                           Game.resolveGameresult(winnerRes.type-1);
+                        }
+                    },
+                    animatePlaceObject: function(obj,scene,callBack) {
+                        var anim = scene.createKeyFrames();
+                        anim.
+                                addKeyFrame(100,obj,obj.setFrameCurrent,[1]).
+                                addKeyFrame(200,obj,obj.setFrameCurrent,[2]).
+                                addKeyFrame(300,obj,obj.setFrameCurrent,[3,callBack]).
+                                run();
+                    },
+                    doOponent: function() {
+                        var _self = this;
+                        this.isActive = false;
+                        function getFreePos() {
+                            var x = parseInt(Math.random()*3);
+                            var y = parseInt(Math.random()*3);
+                            if (_self.field[y][x]==0) return {y:y,x:x};
+                            else return getFreePos();
+                        }
+                        function occupyCenter() {
+                            if (_self.field[1][1]==0) return {y:1,x:1};
+                            return null;
+                        }
+                        function occupyCorners() {
+                            if (_self.field[0][0]==0) return {y:0,x:0};
+                            if (_self.field[0][2]==0) return {y:0,x:2};
+                            if (_self.field[2][0]==0) return {y:2,x:0};
+                            if (_self.field[2][2]==0) return {y:2,x:2};
+                            return null;
+                        }
+                        if (Game.resolveDraw()) {
+                            Game.resolveGameresult(2);
+                        } else {
+                            var lvl = _self.level;
+                            var freePos =
+                                            (lvl>1 && this.checkLines(2,0)) || // нападение
+                                            (lvl>1 && this.checkLines(1,0)) || // защита
+                                            (lvl>2 && occupyCenter()) || // занимаем центр
+                                            (lvl>2 && occupyCorners()) || // занимаем углы
+                                            getFreePos();  // случайный ход
+                            var objO = Game.getOobj();
+                            Game.placeObject(objO,2,mainScene,freePos.x,freePos.y,function(){
+                                if (!Game.isGameOver) Game.isActive = true;
+                            });
+                        }
+                        //this.debudField();
+                    },
+                    debudField: function() {
+                        var f = this.field;
+                        console.log('-----------------------');
+                        console.log(f[0][0],f[0][1],f[0][2]);
+                        console.log(f[1][0],f[1][1],f[1][2]);
+                        console.log(f[2][0],f[2][1],f[2][2]);
+                    },
+                    checkLine: function(v1,v2,v3,a,b) {
+                        if (v1==a && v2==a && v3==b) return {res:true,pos: 2};
+                        if (v1==a && v2==b && v3==a) return {res:true,pos: 1};
+                        if (v1==b && v2==a && v3==a) return {res:true,pos: 0};
+                        return {res:false};
+                    },
+                    checkLines: function(a,b) {
+                        for (var i=0;i<this.lines.length;i++) {
+                            var line = this.lines[i];
+                            var res = this.checkLine(
+                                    this.field[line[0].y][line[0].x],
+                                    this.field[line[1].y][line[1].x],
+                                    this.field[line[2].y][line[2].x],
+                                    a,b
+                            );
+                            if (res.res==true) {
+                                return {x:line[res.pos].x,y:line[res.pos].y,i:i};
+                            }
+                        }
+                        return null;
+                    },
+                    resolveWinner: function() {
+                        var res = this.checkLines(1,1);
+                        if (res) {
+                            res.typeWinner = 1;
+                        }
+                        else {
+                            res = this.checkLines(2,2);
+                            if (res) res.typeWinner = 2;
+                        }
+                        if (!res) return {res:false};
+                        switch (res.i) {
+                            case 0:
+                                obj_done.setFrameCurrent(0).setPos(0,0);
+                                break;
+                            case 1:
+                                obj_done.setFrameCurrent(0).setPos(0,80);
+                                break;
+                            case 2:
+                                obj_done.setFrameCurrent(0).setPos(0,80*2);
+                                break;
+                            case 3:
+                                obj_done.setFrameCurrent(1).setPos(0,0);
+                                break;
+                            case 4:
+                                obj_done.setFrameCurrent(1).setPos(80,0);
+                                break;
+                            case 5:
+                                obj_done.setFrameCurrent(1).setPos(80*2,0);
+                                break;
+                            case 6:
+                                obj_done.setFrameCurrent(2).setPos(0,0);
+                                break;
+                            case 7:
+                                obj_done.setFrameCurrent(3).setPos(0,0);
+                                break;
+                        }
+                        obj_done.show(300);
+                        return {res:true,type:res.typeWinner};
+                    },
+                    resolveDraw: function() {
+                        for (var y=0;y<3;y++) {
+                            for (var x=0;x<3;x++) {
+                                if (this.field[y][x]==0) {
+                                    return false;
+                                }
+                            }
+                        }
+                        Game.isActive = false;
+                        return true;
+                    },
+                    resolveGameresult: function(n) {
+                        if (this.isGameOver) return;
+                        bg_main.setOpacity(0.8,200);
+                        var _self = this;
+                        obj_resultTitle.setFrameCurrent(n).centrate().show(200).setPosY(220,2000,function(){
+                            _self.isActive = true;
+                            btnBack.show(200);
+                        });
+                        this.isGameOver = true;
+                        Game.isActive = false;
+                    }
+                }
+
+                ckBox_easy.onClick(function(){Game.level=1;txtLabel.setText('Легко');});
+                ckBox_mid.onClick(function(){Game.level=2;txtLabel.setText('Средне');});
+                ckBox_hard.onClick(function(){Game.level=3;txtLabel.setText('Сложно');});
+
+                showLogo();
+
+            });
+
+
+    </script>
+</head>
+
+<body>
+
+</body>
+
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
