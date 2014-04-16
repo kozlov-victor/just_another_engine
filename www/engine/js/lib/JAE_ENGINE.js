@@ -1043,8 +1043,11 @@ var ENGINE = (function () {
             var metaTagCharSet = document.createElement('meta');
             var cnv = document.createElement('canvas');
             document.getElementsByTagName('body')[0].appendChild(cnv);
-            window.scrollTo(0,1);
             _external.SceneManager._setContext(cnv);
+            setTimeout(function(){
+                // Hide the address bar!
+                window.scrollTo(0, 1);
+            }, 0);
         }, 50);
 
     }
