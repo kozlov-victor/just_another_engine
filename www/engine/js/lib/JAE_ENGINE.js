@@ -1041,8 +1041,6 @@ var ENGINE = (function () {
                 ' target-densityDpi=device-dpi';
             document.getElementsByTagName('head')[0].appendChild(metaTagViewport);
             var metaTagCharSet = document.createElement('meta');
-            metaTagCharSet.charset = 'UTF-8';
-            document.getElementsByTagName('head')[0].appendChild(metaTagCharSet);
             var cnv = document.createElement('canvas');
             document.getElementsByTagName('body')[0].appendChild(cnv);
             _external.SceneManager._setContext(cnv);
