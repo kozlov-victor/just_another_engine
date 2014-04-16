@@ -1,14 +1,6 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width,
-        minimum-scale=1,
-        initial-scale=1,
-        maximum-scale=1,
-        user-scalable=no
-        target-densityDpi=device-dpi"
-    />
-    <meta charset="utf-8"/>
     <script type="text/javascript" src="../../engine/js/lib/oop.js"></script>
     <script type="text/javascript" src="../../engine/js/lib/JAE_CORE.js"></script>
     <script type="text/javascript" src="../../engine/js/lib/JAE_ENGINE.js"></script>
@@ -42,7 +34,6 @@
                 }
         );
 
-        ENGINE.SceneManager.setCurrentScene(introScene);
         ENGINE.SceneManager.setFont(GLOBAL.BASE_URL+'engine/css/images/font.png',FontData);
         ENGINE.SceneManager.onProgress(function (complete) {
             //console.log('complete',complete);

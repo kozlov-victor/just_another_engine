@@ -1,0 +1,28 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <script type="text/javascript" src="../../engine/js/lib/oop.js"></script>
+    <script type="text/javascript" src="../../engine/js/lib/JAE_CORE.js"></script>
+    <script type="text/javascript" src="../../engine/js/lib/JAE_ENGINE.js"></script>
+    <script type="text/javascript" src="../../engine/js/data/data.js"></script>
+    <link type="text/css" rel="stylesheet" href="../../engine/css/common.css">
+</head>
+<body>
+<script type="text/javascript">
+
+    var BASE_URL = GLOBAL.BASE_URL+ 'projects/spaceShooter/res/';
+
+    var introScene = new ENGINE.Scene();
+    ENGINE.SceneManager.setFont(GLOBAL.BASE_URL+'engine/css/images/font.png',FontData);
+    ENGINE.SceneManager.onProgress(function (complete) {
+        ENGINE.SceneManager.getContext().fillRect(0, 0, 240, 320, '#000000');
+        ENGINE.SceneManager.getContext().fillRect(0, 0, 240 * (complete), 10, '#00ff00');
+    });
+    ENGINE.SceneManager.onComplete(function() {
+
+    });
+
+
+</script>
+</body>
+</html>

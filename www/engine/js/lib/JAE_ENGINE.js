@@ -546,6 +546,7 @@ var ENGINE = (function () {
                 this._particleGroups.stopDrawing = true;
                 this._backGround = null;
                 this._backGroundColor = _external._Context._defaultOptions._opacity;
+                ENGINE.SceneManager.setCurrentScene(this);
             },
             _addObject:function (obj, options) {
                 if (options && options.isParticle) {
@@ -1030,6 +1031,18 @@ var ENGINE = (function () {
 
         // initialization when DOM ready
         GLOBAL._onDOMReady(function () {
+            var metaTagViewport = document.createElement('meta');
+            metaTagViewport.name='viewport';
+            metaTagViewport.content = 'width=device-width, '+
+                ' minimum-scale=1, '+
+                ' initial-scale=1, '+
+                ' maximum-scale=1, '+
+                ' user-scalable=no, '+
+                ' target-densityDpi=device-dpi';
+            document.getElementsByTagName('head')[0].appendChild(metaTagViewport);
+            var metaTagCharSet = document.createElement('meta');
+            metaTagCharSet.charset = 'UTF-8';
+            document.getElementsByTagName('head')[0].appendChild(metaTagCharSet);
             var cnv = document.createElement('canvas');
             document.getElementsByTagName('body')[0].appendChild(cnv);
             _external.SceneManager._setContext(cnv);

@@ -170,14 +170,6 @@ var GLOBAL = (function () {
                 deffered.addEvent(s);
                 document.getElementsByTagName('head')[0].appendChild(s);
             });
-            /*if (_items && _items.length && _items.length > 0) {
-             for (var i = 0, max = _items.length; i < max; i++) {
-             var s = document.createElement('script');
-             s.src = _prefix + _items[i] + _suffix;
-             deffered.addEvent(s);
-             document.getElementsByTagName('head')[0].appendChild(s);
-             }
-             }*/
         }
 
         this.readTextFile = function (file, callback) {
