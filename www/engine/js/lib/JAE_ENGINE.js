@@ -1043,6 +1043,7 @@ var ENGINE = (function () {
             var metaTagCharSet = document.createElement('meta');
             var cnv = document.createElement('canvas');
             document.getElementsByTagName('body')[0].appendChild(cnv);
+            window.scrollTo(1,0);
             _external.SceneManager._setContext(cnv);
         }, 50);
 
