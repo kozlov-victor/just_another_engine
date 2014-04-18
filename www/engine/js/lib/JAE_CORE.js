@@ -153,24 +153,6 @@ var GLOBAL = (function () {
             }
         });
 
-        /*
-         prefix: str
-         suffix: str
-         items:  array
-         onLoad: function
-         */
-        this.require = function (params) {
-            var deffered = new _that.Deffered(params.onLoad);
-            var _prefix = params.prefix || '';
-            var _suffix = params.suffix || '';
-            var _items = params.items;
-            GLOBAL._each(_items, function (item) {
-                var s = document.createElement('script');
-                s.src = _prefix + item + _suffix;
-                deffered.addEvent(s);
-                document.getElementsByTagName('head')[0].appendChild(s);
-            });
-        }
 
         this.readTextFile = function (file, callback) {
             var s = document.createElement('script');
@@ -191,8 +173,6 @@ var GLOBAL = (function () {
 
     }
 })();
-
-
 
 
 

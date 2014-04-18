@@ -55,12 +55,12 @@
         var intro = {
             runIntro: function() {
                 lbl.setCompositeOperation(ENGINE.COMPOSITE_OPERATIONS.SCREEN);
-                lbl.scale(10,1000).rotate(360,20000);
+                lbl.scale(10,1000).rotate(360,5000,null,ENGINE.EaseFunctions.EASE_OUT_CIRC);
                 lbl.centrate().show(1000);
                 obj_logo.centrate().show(2000);
                 var keyFrames = introScene.createKeyFrames();
                 keyFrames.
-                        addKeyFrame(4000,obj_logo,obj_logo.scale,[10,1500]).
+                        addKeyFrame(4000,obj_logo,obj_logo.scale,[10,1500,null,ENGINE.EaseFunctions.EASE_OUT_EXPO]).
                         addKeyFrame(5500,obj_logo,obj_logo.scale,[1,1500]).
                         addKeyFrame(4000,obj_logo,obj_logo.hide,[2000]).
                         addKeyFrame(5000,lbl,lbl.hide,[2000,function(){console.log('hided>>>')}]).

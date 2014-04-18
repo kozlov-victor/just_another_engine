@@ -93,11 +93,11 @@
                     btnPlay.centrate().setPosY(-100).show(100).setPosY(260,600);
                     mainScene.createKeyFrames().
                             addKeyFrame(0, ui_lbl_easy, ui_lbl_easy.show, [500]).
-                            addKeyFrame(0, ui_lbl_easy,ui_lbl_easy.setPosX, [40, 500]).
+                            addKeyFrame(0, ui_lbl_easy,ui_lbl_easy.setPosX, [40, 500, null, ENGINE.EaseFunctions.EASE_IN_EXPO]).
                             addKeyFrame(200, ui_lbl_mid,ui_lbl_mid.show, [500]).
-                            addKeyFrame(200, ui_lbl_mid,ui_lbl_mid.setPosX, [40, 500]).
+                            addKeyFrame(200, ui_lbl_mid,ui_lbl_mid.setPosX, [40, 500, null, ENGINE.EaseFunctions.EASE_IN_EXPO]).
                             addKeyFrame(400, ui_lbl_hard,ui_lbl_hard.show, [500]).
-                            addKeyFrame(400, ui_lbl_hard,ui_lbl_hard.setPosX, [40, 500]).
+                            addKeyFrame(400, ui_lbl_hard,ui_lbl_hard.setPosX, [40, 500, null, ENGINE.EaseFunctions.EASE_IN_EXPO]).
                             run();
                     btnPlay.onClick(function(){
                         showGame();
@@ -353,7 +353,7 @@
                         obj_resultTitle.setFrameCurrent(n).centrate().show(200).setPosY(220,2000,function(){
                             _self.isActive = true;
                             btnBack.show(200);
-                        });
+                        },ENGINE.EaseFunctions.EASE_IN_SINE);
                         this.isGameOver = true;
                         Game.isActive = false;
                     }

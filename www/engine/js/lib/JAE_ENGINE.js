@@ -51,26 +51,6 @@ var ENGINE = (function () {
             return getRandom(initial - delta, initial + delta);
         }
 
-        /*this.ResourceBundle = Class.extend({
-         _deffered:null,
-         init:function () {
-         this._deffered = new GLOBAL.Deffered();
-         },
-         onComplete:function (onCompleteFn) {
-         this._deffered.setOnCompleteFn(onCompleteFn);
-         },
-         onProgress:function (onProgressFn) {
-         this._deffered.setOnProgressFn(onProgressFn);
-         },
-         loadSprite:function (strUrl) {
-         var sprite = new Sprite(strUrl);
-         this._deffered.addEvent(sprite._image, function () {
-         sprite._width = sprite._image.width;
-         sprite._height = sprite._image.height;
-         });
-         return sprite;
-         }
-         });*/
 
         this.COMPOSITE_OPERATIONS = {
             NORMAL:'normal', MULTIPLY:'multiply', SCREEN:'screen', OVERLAY:'overlay',
@@ -363,7 +343,7 @@ var ENGINE = (function () {
             init:function (strUrl, scene, options) {
                 this._super(strUrl, scene, options);
             },
-            _resolveAnimation:function (obj, fnAnim, initial, target, duration, callBackOnComplete) {
+            _resolveAnimation:function (obj, fnAnim, initial, target, duration, callBackOnComplete, easeFn) {
                 if (!duration) {
                     fnAnim.apply(obj, [target]);
                     if (callBackOnComplete) callBackOnComplete();
@@ -377,7 +357,8 @@ var ENGINE = (function () {
                     started:new Date().getTime(),
                     target:target,
                     duration:duration,
-                    callBack:callBackOnComplete
+                    callBack:callBackOnComplete,
+                    easeFn: easeFn || _external.EaseFunctions.LINEAR
                 }
                 this._animations.push(animationObject);
             },
@@ -396,12 +377,12 @@ var ENGINE = (function () {
                 this._sprite._revalidateFrame(w, h, this._frameCurrent);
                 return this;
             },
-            setOpacity:function (n, mlsc, callBack) {
-                this._resolveAnimation(this, this._setOpacity, this._opacity, n, mlsc, callBack);
+            setOpacity:function (n, mlsc, callBack, easeFn) {
+                this._resolveAnimation(this, this._setOpacity, this._opacity, n, mlsc, callBack, easeFn);
                 return this;
             },
-            rotate:function (angleInDeg, mlsc, callBack) {
-                this._resolveAnimation(this, this._setAngle, this._angle, degToRad(angleInDeg), mlsc, callBack);
+            rotate:function (angleInDeg, mlsc, callBack, easeFn) {
+                this._resolveAnimation(this, this._setAngle, this._angle, degToRad(angleInDeg), mlsc, callBack, easeFn);
                 return this;
             },
             setPos:function (x, y) {
@@ -409,12 +390,12 @@ var ENGINE = (function () {
                 this._rect._y = y;
                 return this;
             },
-            setPosX:function (n, mlsc, callBack) {
-                this._resolveAnimation(this, this._setPosX, this._rect._x, n, mlsc, callBack);
+            setPosX:function (n, mlsc, callBack, easeFn) {
+                this._resolveAnimation(this, this._setPosX, this._rect._x, n, mlsc, callBack, easeFn);
                 return this;
             },
-            setPosY:function (n, mlsc, callBack) {
-                this._resolveAnimation(this, this._setPosY, this._rect._y, n, mlsc, callBack);
+            setPosY:function (n, mlsc, callBack, easeFn) {
+                this._resolveAnimation(this, this._setPosY, this._rect._y, n, mlsc, callBack, easeFn);
                 return this;
             },
             centrate:function () {
@@ -422,16 +403,16 @@ var ENGINE = (function () {
                 this._rect._y = (_external.SCREEN.IDEAL_HEIGHT >> 1) - this._center._y;
                 return this;
             },
-            scale:function (n, mlsc, callBack) {
-                this._resolveAnimation(this, this._setScale, this._scale, n, mlsc, callBack);
+            scale:function (n, mlsc, callBack, easeFn) {
+                this._resolveAnimation(this, this._setScale, this._scale, n, mlsc, callBack, easeFn);
                 return this;
             },
-            show:function (mlsc, callBack) {
-                this.setOpacity(1, mlsc, callBack);
+            show:function (mlsc, callBack, easeFn) {
+                this.setOpacity(1, mlsc, callBack, easeFn);
                 return this;
             },
-            hide:function (mlsc, callBack) {
-                this.setOpacity(0, mlsc, callBack);
+            hide:function (mlsc, callBack, easeFn) {
+                this.setOpacity(0, mlsc, callBack, easeFn);
                 return this;
             }
         });
@@ -697,8 +678,101 @@ var ENGINE = (function () {
             },
             getContext:function () {
                 return this._context;
+            },
+            setIdealScreenSize: function(w,h) {
+                _external.SCREEN.IDEAL_WIDTH=w;
+                _external.SCREEN.IDEAL_HEIGHT=h;
+                if(_external._Context._cnv && _external._Context._ctx) {
+                    _external.SCREEN.fit(_external._Context._cnv,_external._Context._ctx);
+                }
             }
         });
+
+
+        this.EaseFunctions = {
+            LINEAR: 'linear',
+            EASE_IN_QUAD: 'easeInQuad', EASE_OUT_QUAD: 'easeOutQuad', EASE_IN_OUT_QUAD: 'easeInOutQuad',
+            EASE_IN_CUBIC : 'easeInCubic', EASE_OUT_CUBIC: 'easeOutCubic', EASE_IN_OUT_CUBIC: 'easeInOutCubic',
+            EASE_IN_SINE: 'easeInSine', EASE_OUT_SINE: 'easeOutSine', EASE_IN_OUT_SINE: 'easeInOutSine',
+            EASE_IN_EXPO: 'easeInExpo', EASE_OUT_EXPO: 'easeOutExpo', EASE_IN_OUT_EXPO: 'easeInOutExpo',
+            EASE_IN_CIRC: 'easeInCirc', EASE_OUT_CIRC: 'easeOutCirc', EASE_IN_OUT_CIRC: 'easeInOutCirc'
+        }
+
+        // t - current time
+        // b - start value
+        // c - delta value
+        // d - duration
+        var _EaseFunctions = {
+            linear: function(t, b, c, d) {
+                //return  - t* (b - c)/d + b;
+                return c*t/d+b;
+            },
+            easeInQuad: function (t, b, c, d) {
+                t /= d;
+                return c*t*t + b;
+            },
+            easeOutQuad: function (t, b, c, d) {
+                t /= d;
+                return -c * t*(t-2) + b;
+            },
+            easeInOutQuad: function (t, b, c, d) {
+                t /= d/2;
+                if (t < 1) return c/2*t*t + b;
+                t--;
+                return -c/2 * (t*(t-2) - 1) + b;
+            },
+            easeInCubic: function (t, b, c, d) {
+                t /= d;
+                return c*t*t*t + b;
+            },
+            easeOutCubic: function (t, b, c, d) {
+                t /= d;
+                t--;
+                return c*(t*t*t + 1) + b;
+            },
+            easeInOutCubic: function (t, b, c, d) {
+                t /= d/2;
+                if (t < 1) return c/2*t*t*t + b;
+                t -= 2;
+                return c/2*(t*t*t + 2) + b;
+            },
+            easeInSine: function (t, b, c, d) {
+                return -c * Math.cos(t/d * (Math.PI/2)) + c + b;
+            },
+            easeOutSine: function (t, b, c, d) {
+                return c * Math.sin(t/d * (Math.PI/2)) + b;
+            },
+            easeInOutSine: function (t, b, c, d) {
+                return -c/2 * (Math.cos(Math.PI*t/d) - 1) + b;
+            },
+            easeInExpo: function (t, b, c, d) {
+                return c * Math.pow( 2, 10 * (t/d - 1) ) + b;
+            },
+            easeOutExpo: function (t, b, c, d) {
+                return c * ( -Math.pow( 2, -10 * t/d ) + 1 ) + b;
+            },
+            easeInOutExpo: function (t, b, c, d) {
+                t /= d/2;
+                if (t < 1) return c/2 * Math.pow( 2, 10 * (t - 1) ) + b;
+                t--;
+                return c/2 * ( -Math.pow( 2, -10 * t) + 2 ) + b;
+            },
+            easeInCirc: function (t, b, c, d) {
+                t /= d;
+                return -c * (Math.sqrt(1 - t*t) - 1) + b;
+            },
+            easeOutCirc: function (t, b, c, d) {
+                t /= d;
+                t--;
+                return c * Math.sqrt(1 - t*t) + b;
+            },
+            easeInOutCirc: function (t, b, c, d) {
+                t /= d/2;
+                if (t < 1) return -c/2 * (Math.sqrt(1 - t*t) - 1) + b;
+                t -= 2;
+                return c/2 * (Math.sqrt(1 - t*t) + 1) + b;
+            }
+        }
 
         var TransitionResolver = {
             resolveGameObjectTransitions:function (gObj) {
@@ -724,19 +798,17 @@ var ENGINE = (function () {
                 //initial   начальное значение анимации
                 //target    конечное значение поля
                 //duration  длительность анимации
+                //easeFn    функция сглаживания
                 //callBack  оповещение об окончании анимации
                 var isTargetReached = false;
                 var delta;
                 GLOBAL._each(gObj._animations, function (currentAnim, i) {
                     if (currentAnim) {
-                        var passed = (currentTime - currentAnim.started) / currentAnim.duration;
-                        var currentVal = currentAnim.initial - (currentAnim.initial - currentAnim.target) * passed;
+                        var passed = (currentTime - currentAnim.started);
+                        var deltaValue = currentAnim.target - currentAnim.initial;
+                        var currentVal = _EaseFunctions[currentAnim.easeFn](passed,currentAnim.initial,deltaValue,currentAnim.duration);
                         isTargetReached = false;
-                        delta = currentAnim.initial > currentAnim.target ? -1 : 1;
-                        if (
-                            (delta == 1 && currentVal >= currentAnim.target) ||
-                                (delta == -1 && currentVal <= currentAnim.target)
-                            ) {
+                        if (passed>currentAnim.duration) {
                             currentVal = currentAnim.target;
                             isTargetReached = true;
                         }
