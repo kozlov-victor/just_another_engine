@@ -271,8 +271,8 @@ var ENGINE = (function () {
         });
         this._DrawableObject = _external._ScalableObject.extend({
             _compositeOperation:null,
-            _draw:function () {
-                TransitionResolver.resolveGameObjectTransitions(this);
+            _draw:function (currTime) {
+                TransitionResolver.resolveGameObjectTransitions(this,currTime);
                 var _options = {};
                 _options._opacity = this._opacity;
                 _options._angle = this._angle;
@@ -617,7 +617,7 @@ var ENGINE = (function () {
                             allLabels[i]._calcRect();
                         }
                     }
-                    _external.UI.TextLabel.allTextLabels = null;
+                    //_external.UI.TextLabel.allTextLabels = null;
                 });
                 this._fontData = fontData;
             },
@@ -637,17 +637,18 @@ var ENGINE = (function () {
                     }
                 }
                 var doInRender = function () {
+                    var currentTime = new Date().getTime();
                     //draw background
                     var backGround = _self._currentScene._backGround;
                     _self._context.fillRect(
                         0, 0, _external.SCREEN.IDEAL_WIDTH, _external.SCREEN.IDEAL_HEIGHT,
                         _self._currentScene._backGroundColor);
-                    if (backGround) backGround._draw();
+                    if (backGround) backGround._draw(currentTime);
                     // draw rest objects
                     var objects = _self._currentScene._getObjects();
                     for (var i = 0, max = objects.length; i < max; i++) {
                         var obj = objects[i];
-                        obj._draw();
+                        obj._draw(currentTime);
                     }
                     // draw particles
                     var pgs = _self._currentScene._particleGroups;
@@ -661,7 +662,7 @@ var ENGINE = (function () {
                         for (i = 0, max = particlesArr.length; i < max; i++) {
                             var particle = particlesArr[i];
                             if (_isRectInScreen(particle._rect)) {
-                                if (particle._free == false) particle._draw();
+                                if (particle._free == false) particle._draw(currentTime);
                             } else {
                                 particle._free = true;
                                 particle.hide();
@@ -693,9 +694,12 @@ var ENGINE = (function () {
             LINEAR: 'linear',
             EASE_IN_QUAD: 'easeInQuad', EASE_OUT_QUAD: 'easeOutQuad', EASE_IN_OUT_QUAD: 'easeInOutQuad',
             EASE_IN_CUBIC : 'easeInCubic', EASE_OUT_CUBIC: 'easeOutCubic', EASE_IN_OUT_CUBIC: 'easeInOutCubic',
+            EASE_IN_QUINT: 'easeInQuint', EASE_OUT_QUINT: 'easeOutQuint', EASE_IN_OUT_QUINT: 'easeInOutQuint',
             EASE_IN_SINE: 'easeInSine', EASE_OUT_SINE: 'easeOutSine', EASE_IN_OUT_SINE: 'easeInOutSine',
             EASE_IN_EXPO: 'easeInExpo', EASE_OUT_EXPO: 'easeOutExpo', EASE_IN_OUT_EXPO: 'easeInOutExpo',
-            EASE_IN_CIRC: 'easeInCirc', EASE_OUT_CIRC: 'easeOutCirc', EASE_IN_OUT_CIRC: 'easeInOutCirc'
+            EASE_IN_CIRC: 'easeInCirc', EASE_OUT_CIRC: 'easeOutCirc', EASE_IN_OUT_CIRC: 'easeInOutCirc',
+            EASE_IN_ELASTIC: 'easeInElastic', EASE_OUT_ELASTIC: 'easeOutElastic', EASE_IN_OUT_ELASTIC: 'easeInOutElastic',
+            EASE_IN_BACK: 'easeInBack', EASE_OUT_BACK: 'easeOutBack', EASE_IN_OUT_BACK: 'easeInOutBack',
         }
 
         // t - current time
@@ -736,6 +740,16 @@ var ENGINE = (function () {
                 t -= 2;
                 return c/2*(t*t*t + 2) + b;
             },
+            easeInQuint: function (t, b, c, d) {
+                return c*(t/=d)*t*t*t*t + b;
+            },
+            easeOutQuint: function (t, b, c, d) {
+                return c*((t=t/d-1)*t*t*t*t + 1) + b;
+            },
+            easeInOutQuint: function (t, b, c, d) {
+                if ((t/=d/2) < 1) return c/2*t*t*t*t*t + b;
+                return c/2*((t-=2)*t*t*t*t + 2) + b;
+            },
             easeInSine: function (t, b, c, d) {
                 return -c * Math.cos(t/d * (Math.PI/2)) + c + b;
             },
@@ -771,13 +785,65 @@ var ENGINE = (function () {
                 if (t < 1) return -c/2 * (Math.sqrt(1 - t*t) - 1) + b;
                 t -= 2;
                 return c/2 * (Math.sqrt(1 - t*t) + 1) + b;
+            },
+            easeInElastic: function (t, b, c, d) {
+                var s=1.70158;var p=0;var a=c;
+                if (t==0) return b;  if ((t/=d)==1) return b+c;  if (!p) p=d*.3;
+                if (a < Math.abs(c)) { a=c; s=p/4; }
+                else s = p/(2*Math.PI) * Math.asin (c/a);
+                return -(a*Math.pow(2,10*(t-=1)) * Math.sin( (t*d-s)*(2*Math.PI)/p )) + b;
+            },
+            easeOutElastic: function (t, b, c, d) {
+                var s=1.70158;var p=0;var a=c;
+                if (t==0) return b;  if ((t/=d)==1) return b+c;  if (!p) p=d*.3;
+                if (a < Math.abs(c)) { a=c; s=p/4; }
+                else s = p/(2*Math.PI) * Math.asin (c/a);
+                return a*Math.pow(2,-10*t) * Math.sin( (t*d-s)*(2*Math.PI)/p ) + c + b;
+            },
+            easeInOutElastic: function (t, b, c, d) {
+                var s=1.70158;var p=0;var a=c;
+                if (t==0) return b;  if ((t/=d/2)==2) return b+c;  if (!p) p=d*(.3*1.5);
+                if (a < Math.abs(c)) { a=c; s=p/4; }
+                else s = p/(2*Math.PI) * Math.asin (c/a);
+                if (t < 1) return -.5*(a*Math.pow(2,10*(t-=1)) * Math.sin( (t*d-s)*(2*Math.PI)/p )) + b;
+                return a*Math.pow(2,-10*(t-=1)) * Math.sin( (t*d-s)*(2*Math.PI)/p )*.5 + c + b;
+            },
+            easeInBack: function (t, b, c, d, s) {
+                if (s == undefined) s = 1.70158;
+                return c*(t/=d)*t*((s+1)*t - s) + b;
+            },
+            easeOutBack: function (t, b, c, d, s) {
+                if (s == undefined) s = 1.70158;
+                return c*((t=t/d-1)*t*((s+1)*t + s) + 1) + b;
+            },
+            easeInOutBack: function (t, b, c, d, s) {
+                if (s == undefined) s = 1.70158;
+                if ((t/=d/2) < 1) return c/2*(t*t*(((s*=(1.525))+1)*t - s)) + b;
+                return c/2*((t-=2)*t*(((s*=(1.525))+1)*t + s) + 2) + b;
+            },
+            easeInBounce: function (x, t, b, c, d) {
+                return c - _EaseFunctions.easeOutBounce (x, d-t, 0, c, d) + b;
+            },
+            easeOutBounce: function (x, t, b, c, d) {
+                if ((t/=d) < (1/2.75)) {
+                    return c*(7.5625*t*t) + b;
+                } else if (t < (2/2.75)) {
+                    return c*(7.5625*(t-=(1.5/2.75))*t + .75) + b;
+                } else if (t < (2.5/2.75)) {
+                    return c*(7.5625*(t-=(2.25/2.75))*t + .9375) + b;
+                } else {
+                    return c*(7.5625*(t-=(2.625/2.75))*t + .984375) + b;
+                }
+            },
+            easeInOutBounce: function (x, t, b, c, d) {
+                if (t < d/2) return _EaseFunctions.easeInBounce (x, t*2, 0, c, d) * .5 + b;
+                return _EaseFunctions.easeOutBounce (x, t*2-d, 0, c, d) * .5 + c*.5 + b;
             }
         }
 
         var TransitionResolver = {
-            resolveGameObjectTransitions:function (gObj) {
-                var currentTime = new Date().getTime();
-                //--движение объекта
+            //--движение частицы
+            resolveParticleMoving: function(gObj,currentTime) {
                 if (gObj._free === false) {
                     if (!gObj._t0) gObj._t0 = currentTime;
                     var deltaTime = currentTime - gObj._t0;
@@ -791,6 +857,8 @@ var ENGINE = (function () {
                         });
                     }
                 }
+            },
+            resolveGameObjectTransitions:function (gObj,currentTime) {
                 //--анимации
                 //obj       объект, у которого будет вызываться функция
                 //fn        функция, которая вызывается для изменения значения поля
@@ -843,6 +911,10 @@ var ENGINE = (function () {
                 this._free = true;
                 this._desappearing = false;
             },
+            _draw: function(currTime) {
+                TransitionResolver.resolveParticleMoving(this,currTime);
+                this._super(currTime);
+            }
         });
 
         var DEFAULT_PARTICLE_SYSTEM_OPTIONS = {
@@ -988,8 +1060,8 @@ var ENGINE = (function () {
                     getText:function () {
                         return this._text;
                     },
-                    _draw:function () {
-                        TransitionResolver.resolveGameObjectTransitions(this);
+                    _draw:function (currTime) {
+                        TransitionResolver.resolveGameObjectTransitions(this,currTime);
                         var currX = this._rect._x;
                         var currY = this._rect._y;
                         var fntSpr = _external.SceneManager._fontSprite;
@@ -1012,7 +1084,6 @@ var ENGINE = (function () {
                                 currX, currY, fntCharData.width, fntData.height,
                                 fntCharData.x, fntCharData.y, fntCharData.width * this._fontScale, fntData.height * this._fontScale,
                                 _options);
-                            //_thatMain._Context._ctx.fillRect(currX,currY,fntCharData.width*this._fontScale,fntData.height*this._fontScale);
                             currX += fntCharData.width * this._fontScale;
                         }
 
@@ -1100,7 +1171,12 @@ var ENGINE = (function () {
             }
         })();
 
-
+        // init engine
+        _external.SceneManager.setFont(GLOBAL.BASE_URL+'engine/css/images/font.png',FontData);
+        _external.SceneManager.onProgress(function (complete) {
+            _external.SceneManager.getContext().fillRect(0, 0, _external.SCREEN.IDEAL_WIDTH, _external.SCREEN.IDEAL_HEIGHT, '#000000');
+            _external.SceneManager.getContext().fillRect(0, 0, _external.SCREEN.IDEAL_WIDTH * (complete), 10, '#00ff00');
+        });
         // initialization when DOM ready
         GLOBAL._onDOMReady(function () {
             var metaTagViewport = document.createElement('meta');

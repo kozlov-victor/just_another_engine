@@ -3,10 +3,11 @@
 <head>
     <meta charset="utf-8">
     <script type="text/javascript" src="../../engine/js/lib/oop.js"></script>
+    <script type="text/javascript" src="../../engine/js/data/data.js"></script>
     <script type="text/javascript" src="../../engine/js/lib/JAE_CORE.js"></script>
     <script type="text/javascript" src="../../engine/js/lib/JAE_ENGINE.js"></script>
-    <script type="text/javascript" src="../../engine/js/data/data.js"></script>
     <link type="text/css" rel="stylesheet" href="../../engine/css/common.css">
+
 </head>
 <body>
 <script type="text/javascript">
@@ -16,11 +17,7 @@
 
     var scene = new ENGINE.Scene();
     var ship = new ENGINE.GameObject(BASE_URL+'ship.png',scene,{showEmmediatly:1});
-    ENGINE.SceneManager.setFont(GLOBAL.BASE_URL+'engine/css/images/font.png',FontData);
-    ENGINE.SceneManager.onProgress(function (complete) {
-        ENGINE.SceneManager.getContext().fillRect(0, 0, 240, 320, '#000000');
-        ENGINE.SceneManager.getContext().fillRect(0, 0, 240 * (complete), 10, '#00ff00');
-    });
+
     ENGINE.SceneManager.onComplete(function() {
 
     });

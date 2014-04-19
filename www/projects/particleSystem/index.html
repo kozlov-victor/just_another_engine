@@ -3,9 +3,9 @@
 <head>
     <meta charset="utf-8">
     <script type="text/javascript" src="../../engine/js/lib/oop.js"></script>
+    <script type="text/javascript" src="../../engine/js/data/data.js"></script>
     <script type="text/javascript" src="../../engine/js/lib/JAE_CORE.js"></script>
     <script type="text/javascript" src="../../engine/js/lib/JAE_ENGINE.js"></script>
-    <script type="text/javascript" src="../../engine/js/data/data.js"></script>
     <link type="text/css" rel="stylesheet" href="../../engine/css/common.css">
 </head>
 <body>
@@ -35,12 +35,6 @@
                 }
         );
 
-        ENGINE.SceneManager.setFont(GLOBAL.BASE_URL+'engine/css/images/font.png',FontData);
-        ENGINE.SceneManager.onProgress(function (complete) {
-            //console.log('complete',complete);
-            ENGINE.SceneManager.getContext().fillRect(0, 0, 240, 320, '#000000');
-            ENGINE.SceneManager.getContext().fillRect(0, 0, 240 * (complete), 10, '#00ff00');
-        });
         ENGINE.SceneManager.onComplete(function() {
             intro.runIntro();
         });
@@ -55,12 +49,12 @@
         var intro = {
             runIntro: function() {
                 lbl.setCompositeOperation(ENGINE.COMPOSITE_OPERATIONS.SCREEN);
-                lbl.scale(10,1000).rotate(360,5000,null,ENGINE.EaseFunctions.EASE_OUT_CIRC);
+                lbl.scale(10,1000).rotate(360,5000,null,ENGINE.EaseFunctions.EASE_OUT_ELASTIC);
                 lbl.centrate().show(1000);
                 obj_logo.centrate().show(2000);
                 var keyFrames = introScene.createKeyFrames();
                 keyFrames.
-                        addKeyFrame(4000,obj_logo,obj_logo.scale,[10,1500,null,ENGINE.EaseFunctions.EASE_OUT_EXPO]).
+                        addKeyFrame(4000,obj_logo,obj_logo.scale,[10,1500,null,ENGINE.EaseFunctions.EASE_IN_OUT_BACK]).
                         addKeyFrame(5500,obj_logo,obj_logo.scale,[1,1500]).
                         addKeyFrame(4000,obj_logo,obj_logo.hide,[2000]).
                         addKeyFrame(5000,lbl,lbl.hide,[2000,function(){console.log('hided>>>')}]).
