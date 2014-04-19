@@ -109,13 +109,13 @@ var ENGINE = (function () {
                 this.SCREEN_HEIGHT = window.innerHeight;
                 return this;
             },
-            dispatchMouse:function () {
+            dispatchMouseAndKeyBoard:function () {
                 var _self = this;
                 var objects = _external.SceneManager._currentScene._getObjects();
                 var dispatchOneTouch = function (opName, scrX, scrY, objects) {
                     var x = (scrX - _self.SCREEN_LEFT) * _self.SCALED_FACTOR_X;
                     var y = (scrY - _self.SCREEN_TOP) * _self.SCALED_FACTOR_Y;
-                    var engineEvent = {x:x, y:y}; // todo может поднять наверх
+                    var engineEvent = {x:x, y:y};
                     var currentScene = _external.SceneManager._currentScene;
                     var userFn = '_on' + opName + 'Fn';
                     if (currentScene[userFn]) currentScene[userFn](engineEvent);
@@ -156,9 +156,30 @@ var ENGINE = (function () {
                 bodyElement.addEventListener(GLOBAL.ACTIONS.MOVE, function (e) {
                     triggerMouseAction(e, 'MouseMove');
                 });
+                // key events
+                var keyHolds = {};
+                bodyElement.addEventListener('keydown',function(e){
+                    var fnToInvoke = _external.SceneManager._currentScene._onKeyDownFn;
+                    var keyCode = e.keyCode;
+                    if (keyHolds[keyCode]) return;
+                    if (fnToInvoke) fnToInvoke(keyCode);
+                    keyHolds[keyCode] = true;
+                });
+                bodyElement.addEventListener('keyup',function(e){
+                    var fnToInvoke = _external.SceneManager._currentScene._onKeyUpFn;
+                    var keyCode = e.keyCode;
+                    if (fnToInvoke) fnToInvoke(keyCode);
+                    keyHolds[keyCode] = false;
+                });
                 return this;
             }
         });
+
+
+        this.KEYS = {
+            KEY_LEFT: 37, KEY_UP: 38, KEY_RIGHT: 39, KEY_DOWN: 40
+        }
+
 
         this._KeyFramesHolder = Class.extend({
             _tasks:null,
@@ -238,7 +259,20 @@ var ENGINE = (function () {
                 this._frameRect._y = framePosY;
             }
         });
-        this._ClickableObject = Class.extend({
+
+        this._KeyPressableObject = Class.extend({
+            _onKeyDownFn: null,
+            _onKeyUpFn: null,
+            init:function () {
+            },
+            onKeyDown: function(__onKeyDownFn) {
+               this._onKeyDownFn = __onKeyDownFn;
+            },
+            onKeyUp: function(__onKeyUpFn) {
+                this._onKeyUpFn = __onKeyUpFn;
+            }
+        });
+        this._ClickableObject = _external._KeyPressableObject.extend({
             _onClickFn:null,
             _onMouseMoveFn:null,
             init:function () {
@@ -286,6 +320,7 @@ var ENGINE = (function () {
                 this._compositeOperation = op;
             }
         });
+        //todo _MoveableObject
         this._BaseObject = _external._DrawableObject.extend({
             _scene:null,
             _onloadFn:null,
@@ -435,7 +470,7 @@ var ENGINE = (function () {
                     _external.SCREEN.refreshSize();
                     _external.SCREEN.fit(_self._cnv, _self._ctx);
                 };
-                _external.SCREEN.fit(this._cnv, this._ctx).dispatchMouse();
+                _external.SCREEN.fit(this._cnv, this._ctx).dispatchMouseAndKeyBoard();
                 this._needRestoreCurrentFrame = false;
                 this._isAlreadySaved = false;
             },
@@ -699,7 +734,7 @@ var ENGINE = (function () {
             EASE_IN_EXPO: 'easeInExpo', EASE_OUT_EXPO: 'easeOutExpo', EASE_IN_OUT_EXPO: 'easeInOutExpo',
             EASE_IN_CIRC: 'easeInCirc', EASE_OUT_CIRC: 'easeOutCirc', EASE_IN_OUT_CIRC: 'easeInOutCirc',
             EASE_IN_ELASTIC: 'easeInElastic', EASE_OUT_ELASTIC: 'easeOutElastic', EASE_IN_OUT_ELASTIC: 'easeInOutElastic',
-            EASE_IN_BACK: 'easeInBack', EASE_OUT_BACK: 'easeOutBack', EASE_IN_OUT_BACK: 'easeInOutBack',
+            EASE_IN_BACK: 'easeInBack', EASE_OUT_BACK: 'easeOutBack', EASE_IN_OUT_BACK: 'easeInOutBack'
         }
 
         // t - current time
