@@ -18,11 +18,26 @@
     var scene = new ENGINE.Scene();
     var ship = new ENGINE.GameObject(BASE_URL+'ship.png',scene,{showEmmediatly:1});
     scene.onKeyDown(function(code){
-        if (code==ENGINE.KEYS.KEY_LEFT) {
-            console.log('pressed left')
-        }
+        console.log('pressed any key',code);
+    });
+    scene.onKeyDown(ENGINE.KEYS.KEY_DOWN,function(){
+        ship._velocityObj.value = 0.1;
+        ship._velocityObj.angle = Math.PI/2;
+    });
+    scene.onKeyDown(ENGINE.KEYS.KEY_UP,function(){
+        ship._velocityObj.value = 0.1;
+        ship._velocityObj.angle = -Math.PI/2;
+    });
+    scene.onKeyDown(ENGINE.KEYS.KEY_LEFT,function(){
+        ship._velocityObj.value = 0.1;
+        ship._velocityObj.angle = Math.PI;
+    });
+    scene.onKeyDown(ENGINE.KEYS.KEY_RIGHT,function(){
+        ship._velocityObj.value = 0.1;
+        ship._velocityObj.angle = 0;
     });
     ENGINE.SceneManager.onComplete(function() {
+
 
     });
 

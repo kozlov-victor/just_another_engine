@@ -51,6 +51,7 @@ var ENGINE = (function () {
             return getRandom(initial - delta, initial + delta);
         }
 
+        var ANY_KEY = -1;
 
         this.COMPOSITE_OPERATIONS = {
             NORMAL:'normal', MULTIPLY:'multiply', SCREEN:'screen', OVERLAY:'overlay',
@@ -159,16 +160,18 @@ var ENGINE = (function () {
                 // key events
                 var keyHolds = {};
                 bodyElement.addEventListener('keydown',function(e){
-                    var fnToInvoke = _external.SceneManager._currentScene._onKeyDownFn;
+                    var objToInvoke = _external.SceneManager._currentScene._onKeyDownObj;
                     var keyCode = e.keyCode;
                     if (keyHolds[keyCode]) return;
-                    if (fnToInvoke) fnToInvoke(keyCode);
+                    if (objToInvoke[keyCode]) objToInvoke[keyCode](keyCode);
+                    if (objToInvoke[ANY_KEY]) objToInvoke[ANY_KEY](keyCode);
                     keyHolds[keyCode] = true;
                 });
                 bodyElement.addEventListener('keyup',function(e){
-                    var fnToInvoke = _external.SceneManager._currentScene._onKeyUpFn;
+                    var objToInvoke = _external.SceneManager._currentScene._onKeyUpObj;
                     var keyCode = e.keyCode;
-                    if (fnToInvoke) fnToInvoke(keyCode);
+                    if (objToInvoke[keyCode]) objToInvoke[keyCode](keyCode);
+                    if (objToInvoke[ANY_KEY]) objToInvoke[ANY_KEY](keyCode);
                     keyHolds[keyCode] = false;
                 });
                 return this;
@@ -260,22 +263,39 @@ var ENGINE = (function () {
             }
         });
 
-        this._KeyPressableObject = Class.extend({
-            _onKeyDownFn: null,
-            _onKeyUpFn: null,
+        this._KeyPressableObject = Class.extend({ //todo пересмотреть ООП
+            _onKeyDownObj: {}, // объект, который содержит код клавиши и функцию - обработчик нажатия этой клавиши
+            _onKeyUpObj: {},
             init:function () {
             },
-            onKeyDown: function(__onKeyDownFn) {
-               this._onKeyDownFn = __onKeyDownFn;
+            onKeyDown: function(keyCodeOrFn, onKeyDownFn) {
+                var code,fn;
+                if (arguments.length==1) {
+                   code = ANY_KEY;
+                   fn = keyCodeOrFn;
+                } else {
+                   code = keyCodeOrFn;
+                   fn = onKeyDownFn;
+                }
+                this._onKeyDownObj[code] = fn;
             },
-            onKeyUp: function(__onKeyUpFn) {
-                this._onKeyUpFn = __onKeyUpFn;
+            onKeyUp: function(keyCodeOrFn,onKeyUpFn) {
+                var code,fn;
+                if (arguments.length==1) {
+                    code = ANY_KEY;
+                    fn = keyCodeOrFn;
+                } else {
+                    code = keyCodeOrFn;
+                    fn = onKeyUpFn;
+                }
+                this._onKeyUpObj[code] = fn;
             }
         });
         this._ClickableObject = _external._KeyPressableObject.extend({
             _onClickFn:null,
             _onMouseMoveFn:null,
             init:function () {
+                this._super();
             },
             onClick:function (__onClickFn) {
                 this._onClickFn = __onClickFn;
@@ -293,6 +313,7 @@ var ENGINE = (function () {
             _angle:null,
             _scale:null,
             init:function () {
+                this._super();
                 this._angle = 0;
                 this._scale = 1;
             },
@@ -305,8 +326,12 @@ var ENGINE = (function () {
         });
         this._DrawableObject = _external._ScalableObject.extend({
             _compositeOperation:null,
+            init: function(){
+                this._super();
+            },
             _draw:function (currTime) {
                 TransitionResolver.resolveGameObjectTransitions(this,currTime);
+                TransitionResolver.resolveGameObjectMoving(this,currTime);
                 var _options = {};
                 _options._opacity = this._opacity;
                 _options._angle = this._angle;
@@ -320,8 +345,16 @@ var ENGINE = (function () {
                 this._compositeOperation = op;
             }
         });
-        //todo _MoveableObject
-        this._BaseObject = _external._DrawableObject.extend({
+        this._MoveableObject = _external._DrawableObject.extend({
+            _velocityObj: {},
+            _lastTime: null,
+            init:function () {
+                this._super();
+                this._velocityObj.value=0;
+                this._velocityObj.angle=0;
+            },
+        });
+        this._BaseObject = _external._MoveableObject.extend({
             _scene:null,
             _onloadFn:null,
             _opacity:null,
@@ -892,6 +925,20 @@ var ENGINE = (function () {
                         });
                     }
                 }
+            },
+            resolveGameObjectMoving: function(gObj,currentTime) {
+                var lastTime = gObj._lastTime;
+                if (!lastTime) gObj._lastTime = currentTime;
+                var v = gObj._velocityObj.value;
+                var angle = gObj._velocityObj.angle;
+                if (v) {
+                    var vx = v*Math.cos(angle);
+                    var vy = v*Math.sin(angle);
+                    var dt = currentTime - lastTime;
+                    gObj._rect._x = gObj._rect._x + vx*dt;
+                    gObj._rect._y = gObj._rect._y + vy*dt;
+                }
+                gObj._lastTime = currentTime;
             },
             resolveGameObjectTransitions:function (gObj,currentTime) {
                 //--анимации
