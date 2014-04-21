@@ -37,7 +37,7 @@
         ship._velocityObj.angle = 0;
     });
     ENGINE.SceneManager.onComplete(function() {
-
+        ship.setPos(120,330,1000,function(){console.log('event end')},ENGINE.EaseFunctions.LINEAR);
 
     });
 

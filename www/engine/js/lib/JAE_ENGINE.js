@@ -52,6 +52,7 @@ var ENGINE = window.ENGINE || {};
     }
 
     var ANY_KEY = -1;
+    var bodyElement = null;
 
     ENGINE.COMPOSITE_OPERATIONS = {
         NORMAL:'normal', MULTIPLY:'multiply', SCREEN:'screen', OVERLAY:'overlay',
@@ -63,7 +64,6 @@ var ENGINE = window.ENGINE || {};
         DESTINATION_OVER:'destination-over', SOURCE_IN:'source-in', DESTINATION_IN:'destination-in',
         SOURCE_OUT:'source-out', DESTINATION_OUT:'destination-out', SOURCE_ATOP:'source-atop',
         DESTINATION_ATOP:'destination-atop', XOR:'xor', LIGHTER:'lighter'
-
     };
 
     ENGINE.SCREEN = Class.extend({}, {
@@ -110,7 +110,7 @@ var ENGINE = window.ENGINE || {};
             this.SCREEN_HEIGHT = window.innerHeight;
             return this;
         },
-        dispatchMouseAndKeyBoard:function () {
+        dispatchMouse:function () {
             var _self = this;
             var objects = ENGINE.SceneManager._currentScene._getObjects();
             var dispatchOneTouch = function (opName, scrX, scrY, objects) {
@@ -149,7 +149,6 @@ var ENGINE = window.ENGINE || {};
                 }
             }
             // click
-            var bodyElement = document.getElementsByTagName('body')[0];
             bodyElement.addEventListener(GLOBAL.ACTIONS.START, function (e) {
                 triggerMouseAction(e, 'Click');
             });
@@ -157,6 +156,9 @@ var ENGINE = window.ENGINE || {};
             bodyElement.addEventListener(GLOBAL.ACTIONS.MOVE, function (e) {
                 triggerMouseAction(e, 'MouseMove');
             });
+            return this;
+        },
+        dispatchKeyboard:function () {
             // key events
             var keyHolds = {};
             bodyElement.addEventListener('keydown', function (e) {
@@ -263,7 +265,7 @@ var ENGINE = window.ENGINE || {};
         }
     });
 
-    ENGINE._KeyPressableObject = Class.extend({ //todo пересмотреть ООП
+    ENGINE._KeyPressableObject = Class.extend({
         _onKeyDownObj:{}, // объект, который содержит код клавиши и функцию - обработчик нажатия этой клавиши
         _onKeyUpObj:{},
         init:function () {
@@ -330,8 +332,8 @@ var ENGINE = window.ENGINE || {};
             this._super();
         },
         _draw:function (currTime) {
-            TransitionResolver.resolveGameObjectTransitions(this, currTime);
-            TransitionResolver.resolveGameObjectMoving(this, currTime);
+            ENGINE._TransitionResolver.resolveGameObjectTransitions(this, currTime);
+            ENGINE._TransitionResolver.resolveGameObjectMoving(this, currTime);
             var _options = {};
             _options._opacity = this._opacity;
             _options._angle = this._angle;
@@ -453,9 +455,9 @@ var ENGINE = window.ENGINE || {};
             this._resolveAnimation(this, this._setAngle, this._angle, degToRad(angleInDeg), mlsc, callBack, easeFn);
             return this;
         },
-        setPos:function (x, y) {
-            this._rect._x = x;
-            this._rect._y = y;
+        setPos:function (x, y, mlsc, callBack, easeFn) {  // todo
+            this.setPosX(x, mlsc, callBack, easeFn);
+            this.setPosY(y, mlsc, callBack, easeFn);
             return this;
         },
         setPosX:function (n, mlsc, callBack, easeFn) {
@@ -466,9 +468,10 @@ var ENGINE = window.ENGINE || {};
             this._resolveAnimation(this, this._setPosY, this._rect._y, n, mlsc, callBack, easeFn);
             return this;
         },
-        centrate:function () {
-            this._rect._x = (ENGINE.SCREEN.IDEAL_WIDTH >> 1) - this._center._x;
-            this._rect._y = (ENGINE.SCREEN.IDEAL_HEIGHT >> 1) - this._center._y;
+        centrate:function (mlsc, callBack, easeFn) {
+            var posX = (ENGINE.SCREEN.IDEAL_WIDTH >> 1) - this._center._x;
+            var posY =  (ENGINE.SCREEN.IDEAL_HEIGHT >> 1) - this._center._y;
+            this.setPos(posX,posY,mlsc,callBack,easeFn);
             return this;
         },
         scale:function (n, mlsc, callBack, easeFn) {
@@ -503,7 +506,8 @@ var ENGINE = window.ENGINE || {};
                 ENGINE.SCREEN.refreshSize();
                 ENGINE.SCREEN.fit(_self._cnv, _self._ctx);
             };
-            ENGINE.SCREEN.fit(this._cnv, this._ctx).dispatchMouseAndKeyBoard();
+            bodyElement = document.getElementsByTagName('body')[0];
+            ENGINE.SCREEN.fit(this._cnv, this._ctx).dispatchMouse().dispatchKeyboard();
             this._needRestoreCurrentFrame = false;
             this._isAlreadySaved = false;
         },
@@ -930,7 +934,7 @@ var ENGINE = window.ENGINE || {};
         }
     }
 
-    var TransitionResolver = {
+    ENGINE._TransitionResolver = {
         //--движение частицы
         resolveParticleMoving:function (gObj, currentTime) {
             if (gObj._free === false) {
@@ -1015,7 +1019,7 @@ var ENGINE = window.ENGINE || {};
             this._desappearing = false;
         },
         _draw:function (currTime) {
-            TransitionResolver.resolveParticleMoving(this, currTime);
+            ENGINE._TransitionResolver.resolveParticleMoving(this, currTime);
             this._super(currTime);
         }
     });
@@ -1110,169 +1114,6 @@ var ENGINE = window.ENGINE || {};
         }
     });
 
-    ENGINE.UI = (function () {
-
-        return new function () {
-
-            this.TextLabel = ENGINE.GameObject.extend({
-                _for:null,
-                _text:null,
-                _fontScale:null,
-                setFontScale:function (fontScale) {
-                    this._fontScale = fontScale;
-                    this._calcRect();
-                    return this;
-                },
-                getFontScale:function () {
-                    return this._fontScale;
-                },
-                _calcRect:function () {
-                    if (!this._text) return;
-                    var currWidth = 0;
-                    var fntData = ENGINE.SceneManager._fontData;
-                    var text = this._text;
-                    for (var i = 0, max = this._text.length; i < max; i++) {
-                        var ch = text[i];
-                        var fntCharData = fntData[ch];
-                        currWidth += fntCharData.width * this._fontScale;
-                    }
-                    this._rect._width = currWidth;
-                    this._rect._height = fntData.height * this._fontScale;
-                    this._center._x = this._rect._width >> 1;
-                    this._center._y = this._rect._height >> 1;
-                },
-                init:function (scene, text, options) {
-                    this._doCommonInitOperations(null, scene, options);
-                    this._text = text || '';
-                    this._fontScale = 1;
-                    ENGINE.UI.TextLabel.allTextLabels.push(this);
-                },
-                setFor:function (_forElement) {
-                    this._for = _forElement;
-                },
-                _dispatchClick:function (e) {
-                    if (this._for) {
-                        this._for._dispatchClick(e);
-                        if (this._for._onClickFn) this._for._onClickFn(e);
-                    }
-                },
-                setText:function (text) {
-                    this._text = text;
-                    this._calcRect();
-                },
-                getText:function () {
-                    return this._text;
-                },
-                _draw:function (currTime) {
-                    TransitionResolver.resolveGameObjectTransitions(this, currTime);
-                    var currX = this._rect._x;
-                    var currY = this._rect._y;
-                    var fntSpr = ENGINE.SceneManager._fontSprite;
-                    var fntData = ENGINE.SceneManager._fontData;
-                    var text = this._text;
-                    var _options = {};
-                    _options._opacity = this._opacity;
-                    var scale = this._scale;
-                    if (scale != 1) {
-                        ENGINE._Context._scaleContext(scale);
-                    }
-                    if (this._angle != 0) {
-                        ENGINE._Context._rotateContext(currX, currY, this._center._x, this._center._y, this._angle);
-                    }
-                    for (var i = 0, max = text.length; i < max; i++) {
-                        var ch = text[i];
-                        var fntCharData = fntData[ch];
-                        ENGINE._Context._setCompositeOperation(this._compositeOperation);
-                        ENGINE._Context._drawImg(fntSpr._image,
-                            currX, currY, fntCharData.width, fntData.height,
-                            fntCharData.x, fntCharData.y, fntCharData.width * this._fontScale, fntData.height * this._fontScale,
-                            _options);
-                        currX += fntCharData.width * this._fontScale;
-                    }
-
-                    ENGINE._Context._restoreContext();
-
-                }
-            }, {
-                allTextLabels:[]
-            });
-            this.SpriteLabel = ENGINE.GameObject.extend({
-                _for:null,
-                _textContainer:null,
-                init:function (strUrl, scene, options) {
-                    this._super(strUrl, scene, options);
-                    this.onload(function () {
-                    });
-                },
-                setFor:function (_forElement) {
-                    this._for = _forElement;
-                },
-                _dispatchClick:function (e) {
-                    if (this._for) {
-                        this._for._dispatchClick(e);
-                        if (this._for._onClickFn) this._for._onClickFn(e);
-                    }
-                },
-                setText:function (text) {
-                    if (this._textContainer == null) this._textContainer = new TextContainer();
-                    this._textContainer.setText();
-                },
-                getText:function () {
-                    if (this._textContainer) return this._textContainer._text;
-                    else return null;
-                }
-            });
-            this.CheckBox = ENGINE.GameObject.extend({
-                _isChecked:false,
-                _groupBox:null,
-                init:function (strUrl, scene, options) {
-                    this._super(strUrl, scene, options);
-                    var _self = this;
-                    this.onload(function () {
-                        var sprWidth = _self._sprite._width;
-                        var sprHeight = _self._sprite._height;
-                        _self.setFrameSize(sprWidth / 2, sprHeight);
-                        _self.setFrameCurrent(+!!_self._isChecked);
-                    });
-                },
-                setChecked:function (bChecked) {
-                    this._isChecked = bChecked;
-                    this.setFrameCurrent(+!!bChecked);
-                    return this;
-                },
-                _dispatchClick:function (e) {
-                    if (this._groupBox == null) {
-                        this.setChecked(!this._isChecked);
-                    } else {
-                        if (this._isChecked) return;
-                        this.setChecked(true);
-                        for (var i = 0, max = this._groupBox._elements.length; i < max; i++) {
-                            var element = this._groupBox._elements[i];
-                            if (element != this) {
-                                element.setChecked(false);
-                            }
-                        }
-                    }
-                }
-            });
-            this.GroupBox = Class.extend({
-                _elements:null,
-                init:function () {
-                    this._elements = [];
-                },
-                addElement:function (element) {
-                    this._elements.push(element);
-                    element._groupBox = this;
-                    return this;
-                }
-            });
-            this.Button = ENGINE.GameObject.extend({
-                init:function (strUrl, scene, options) {
-                    this._super(strUrl, scene, options);
-                }
-            });
-        }
-    })();
 
     // init engine
     ENGINE.SceneManager.setFont(GLOBAL.BASE_URL + 'engine/css/images/font.png', FontData);
@@ -1303,3 +1144,159 @@ var ENGINE = window.ENGINE || {};
 
 
 })();
+
+
+ENGINE.UI = {};
+
+(function () {
+
+    ENGINE.UI.TextLabel = ENGINE.GameObject.extend({
+        _for:null,
+        _text:null,
+        _fontScale:null,
+        setFontScale:function (fontScale) {
+            this._fontScale = fontScale;
+            this._calcRect();
+            return this;
+        },
+        getFontScale:function () {
+            return this._fontScale;
+        },
+        _calcRect:function () {
+            if (!this._text) return;
+            var currWidth = 0;
+            var fntData = ENGINE.SceneManager._fontData;
+            var text = this._text;
+            for (var i = 0, max = this._text.length; i < max; i++) {
+                var ch = text[i];
+                var fntCharData = fntData[ch];
+                currWidth += fntCharData.width * this._fontScale;
+            }
+            this._rect._width = currWidth;
+            this._rect._height = fntData.height * this._fontScale;
+            this._center._x = this._rect._width >> 1;
+            this._center._y = this._rect._height >> 1;
+        },
+        init:function (scene, text, options) {
+            this._doCommonInitOperations(null, scene, options);
+            this._text = text || '';
+            this._fontScale = 1;
+            ENGINE.UI.TextLabel.allTextLabels.push(this);
+        },
+        setFor:function (_forElement) {
+            this._for = _forElement;
+        },
+        _dispatchClick:function (e) {
+            if (this._for) {
+                this._for._dispatchClick(e);
+                if (this._for._onClickFn) this._for._onClickFn(e);
+            }
+        },
+        setText:function (text) {
+            this._text = text;
+            this._calcRect();
+        },
+        getText:function () {
+            return this._text;
+        },
+        _draw:function (currTime) {
+            ENGINE._TransitionResolver.resolveGameObjectTransitions(this, currTime);
+            var currX = this._rect._x;
+            var currY = this._rect._y;
+            var fntSpr = ENGINE.SceneManager._fontSprite;
+            var fntData = ENGINE.SceneManager._fontData;
+            var text = this._text;
+            var _options = {};
+            _options._opacity = this._opacity;
+            var scale = this._scale;
+            if (scale != 1) {
+                ENGINE._Context._scaleContext(scale);
+            }
+            if (this._angle != 0) {
+                ENGINE._Context._rotateContext(currX, currY, this._center._x, this._center._y, this._angle);
+            }
+            for (var i = 0, max = text.length; i < max; i++) {
+                var ch = text[i];
+                var fntCharData = fntData[ch];
+                ENGINE._Context._setCompositeOperation(this._compositeOperation);
+                ENGINE._Context._drawImg(fntSpr._image,
+                    currX, currY, fntCharData.width, fntData.height,
+                    fntCharData.x, fntCharData.y, fntCharData.width * this._fontScale, fntData.height * this._fontScale,
+                    _options);
+                currX += fntCharData.width * this._fontScale;
+            }
+
+            ENGINE._Context._restoreContext();
+
+        }
+    }, {
+        allTextLabels:[]
+    });
+    ENGINE.UI.SpriteLabel = ENGINE.GameObject.extend({
+        _for:null,
+        init:function (strUrl, scene, options) {
+            this._super(strUrl, scene, options);
+            this.onload(function () {
+            });
+        },
+        setFor:function (_forElement) {
+            this._for = _forElement;
+        },
+        _dispatchClick:function (e) {
+            if (this._for) {
+                this._for._dispatchClick(e);
+                if (this._for._onClickFn) this._for._onClickFn(e);
+            }
+        }
+    });
+    ENGINE.UI.CheckBox = ENGINE.GameObject.extend({
+        _isChecked:false,
+        _groupBox:null,
+        init:function (strUrl, scene, options) {
+            this._super(strUrl, scene, options);
+            var _self = this;
+            this.onload(function () {
+                var sprWidth = _self._sprite._width;
+                var sprHeight = _self._sprite._height;
+                _self.setFrameSize(sprWidth / 2, sprHeight);
+                _self.setFrameCurrent(+!!_self._isChecked);
+            });
+        },
+        setChecked:function (bChecked) {
+            this._isChecked = bChecked;
+            this.setFrameCurrent(+!!bChecked);
+            return this;
+        },
+        _dispatchClick:function (e) {
+            if (this._groupBox == null) {
+                this.setChecked(!this._isChecked);
+            } else {
+                if (this._isChecked) return;
+                this.setChecked(true);
+                for (var i = 0, max = this._groupBox._elements.length; i < max; i++) {
+                    var element = this._groupBox._elements[i];
+                    if (element != this) {
+                        element.setChecked(false);
+                    }
+                }
+            }
+        }
+    });
+    ENGINE.UI.GroupBox = Class.extend({
+        _elements:null,
+        init:function () {
+            this._elements = [];
+        },
+        addElement:function (element) {
+            this._elements.push(element);
+            element._groupBox = this;
+            return this;
+        }
+    });
+    ENGINE.UI.Button = ENGINE.GameObject.extend({
+        init:function (strUrl, scene, options) {
+            this._super(strUrl, scene, options);
+        }
+    });
+})();
+
