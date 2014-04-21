@@ -51,7 +51,16 @@ var ENGINE = window.ENGINE || {};
         return getRandom(initial - delta, initial + delta);
     }
 
+    var getFnToInvokeCallBack = function(NUM_OF_ACTIONS_TO_CALLBACK,callBack) {
+        var cnt = 0;
+        return function(){
+            ++cnt;
+            if (cnt==NUM_OF_ACTIONS_TO_CALLBACK && callBack) callBack();
+        }
+    }
+
     var ANY_KEY = -1;
+    var NUM_OF_TICKS_TO_CALLBACK = 2;
     var bodyElement = null;
 
     ENGINE.COMPOSITE_OPERATIONS = {
@@ -280,6 +289,7 @@ var ENGINE = window.ENGINE || {};
                 fn = onKeyDownFn;
             }
             this._onKeyDownObj[code] = fn;
+            return this;
         },
         onKeyUp:function (keyCodeOrFn, onKeyUpFn) {
             var code, fn;
@@ -291,6 +301,7 @@ var ENGINE = window.ENGINE || {};
                 fn = onKeyUpFn;
             }
             this._onKeyUpObj[code] = fn;
+            return this;
         }
     });
     ENGINE._ClickableObject = ENGINE._KeyPressableObject.extend({
@@ -348,13 +359,32 @@ var ENGINE = window.ENGINE || {};
         }
     });
     ENGINE._MoveableObject = ENGINE._DrawableObject.extend({
-        _velocityObj:{},
+        _vx: 0,
+        _vy: 0,
         _lastTime:null,
         init:function () {
             this._super();
-            this._velocityObj.value = 0;
-            this._velocityObj.angle = 0;
         },
+        walkDown: function(vel) {
+            this._vx=0;
+            this._vy=vel;
+        },
+        walkUp: function(vel) {
+            this._vx=0;
+            this._vy=-vel;
+        },
+        walkLeft: function(vel) {
+            this._vx=-vel;
+            this._vy=0;
+        },
+        walkRight: function(vel) {
+            this._vx=vel;
+            this._vy=0;
+        },
+        walkStop: function() {
+            this._vx=0;
+            this._vy=0;
+        }
     });
     ENGINE._BaseObject = ENGINE._MoveableObject.extend({
         _scene:null,
@@ -406,6 +436,12 @@ var ENGINE = window.ENGINE || {};
         _setPosY:function (y) {
             this._rect._y = y;
             return this;
+        },
+        getPosX: function() {
+            return this._rect._x;
+        },
+        getPosY: function() {
+            return this._rect._y;
         }
     });
 
@@ -413,15 +449,14 @@ var ENGINE = window.ENGINE || {};
         init:function (strUrl, scene, options) {
             this._super(strUrl, scene, options);
         },
-        _resolveAnimation:function (obj, fnAnim, initial, target, duration, callBackOnComplete, easeFn) {
+        _resolveAnimation:function (fnAnim, initial, target, duration, callBackOnComplete, easeFn) {
             if (!duration) {
-                fnAnim.apply(obj, [target]);
+                fnAnim.apply(this, [target]);
                 if (callBackOnComplete) callBackOnComplete();
                 return;
-            }
-            ;
+            };
             var animationObject = {
-                obj:obj,
+                obj:this,
                 fn:fnAnim,
                 initial:initial,
                 started:new Date().getTime(),
@@ -448,24 +483,25 @@ var ENGINE = window.ENGINE || {};
             return this;
         },
         setOpacity:function (n, mlsc, callBack, easeFn) {
-            this._resolveAnimation(this, this._setOpacity, this._opacity, n, mlsc, callBack, easeFn);
+            this._resolveAnimation(this._setOpacity, this._opacity, n, mlsc, callBack, easeFn);
             return this;
         },
         rotate:function (angleInDeg, mlsc, callBack, easeFn) {
-            this._resolveAnimation(this, this._setAngle, this._angle, degToRad(angleInDeg), mlsc, callBack, easeFn);
+            this._resolveAnimation(this._setAngle, this._angle, degToRad(angleInDeg), mlsc, callBack, easeFn);
             return this;
         },
-        setPos:function (x, y, mlsc, callBack, easeFn) {  // todo
-            this.setPosX(x, mlsc, callBack, easeFn);
-            this.setPosY(y, mlsc, callBack, easeFn);
+        setPos:function (x, y, mlsc, callBack, easeFn) {
+            var _callBack = getFnToInvokeCallBack(NUM_OF_TICKS_TO_CALLBACK,callBack);
+            this.setPosX(x, mlsc, _callBack, easeFn);
+            this.setPosY(y, mlsc, _callBack, easeFn);
             return this;
         },
         setPosX:function (n, mlsc, callBack, easeFn) {
-            this._resolveAnimation(this, this._setPosX, this._rect._x, n, mlsc, callBack, easeFn);
+            this._resolveAnimation(this._setPosX, this._rect._x, n, mlsc, callBack, easeFn);
             return this;
         },
         setPosY:function (n, mlsc, callBack, easeFn) {
-            this._resolveAnimation(this, this._setPosY, this._rect._y, n, mlsc, callBack, easeFn);
+            this._resolveAnimation(this._setPosY, this._rect._y, n, mlsc, callBack, easeFn);
             return this;
         },
         centrate:function (mlsc, callBack, easeFn) {
@@ -475,7 +511,7 @@ var ENGINE = window.ENGINE || {};
             return this;
         },
         scale:function (n, mlsc, callBack, easeFn) {
-            this._resolveAnimation(this, this._setScale, this._scale, n, mlsc, callBack, easeFn);
+            this._resolveAnimation(this._setScale, this._scale, n, mlsc, callBack, easeFn);
             return this;
         },
         show:function (mlsc, callBack, easeFn) {
@@ -954,15 +990,9 @@ var ENGINE = window.ENGINE || {};
         resolveGameObjectMoving:function (gObj, currentTime) {
             var lastTime = gObj._lastTime;
             if (!lastTime) gObj._lastTime = currentTime;
-            var v = gObj._velocityObj.value;
-            var angle = gObj._velocityObj.angle;
-            if (v) {
-                var vx = v * Math.cos(angle);
-                var vy = v * Math.sin(angle);
-                var dt = currentTime - lastTime;
-                gObj._rect._x = gObj._rect._x + vx * dt;
-                gObj._rect._y = gObj._rect._y + vy * dt;
-            }
+            var dt = currentTime - lastTime;
+            if (gObj._vx) gObj._rect._x = gObj._rect._x + gObj._vx * dt;
+            if (gObj._vy) gObj._rect._y = gObj._rect._y + gObj._vy * dt;
             gObj._lastTime = currentTime;
         },
         resolveGameObjectTransitions:function (gObj, currentTime) {

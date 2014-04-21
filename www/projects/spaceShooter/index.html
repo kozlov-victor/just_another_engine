@@ -12,33 +12,59 @@
 <body>
 <script type="text/javascript">
 
-    ENGINE.SceneManager.setIdealScreenSize(800,480);
-    var BASE_URL = GLOBAL.BASE_URL+ 'projects/spaceShooter/res/';
+    ENGINE.SceneManager.setIdealScreenSize(800, 480);
+    var BASE_URL = GLOBAL.BASE_URL + 'projects/spaceShooter/res/';
 
     var scene = new ENGINE.Scene();
-    var ship = new ENGINE.GameObject(BASE_URL+'ship.png',scene,{showEmmediatly:1});
-    scene.onKeyDown(function(code){
-        console.log('pressed any key',code);
+    var ship = new ENGINE.GameObject(BASE_URL + 'ship.png', scene, {showEmmediatly:1});
+    var particlesEngine = new ENGINE.ParticleSystem(
+            {
+                strUrl: BASE_URL +'particle.png',
+                scene : scene,
+                compositeOperation: ENGINE.COMPOSITE_OPERATIONS.DESTINATION,
+                force: 5,
+                posDispersion: 0.01,
+                alpha: Math.PI,
+                timeOfParticleLiveMlsc: 100,
+                mass: 1
+            }
+    );
+    scene.onKeyDown(function (code) {
+        //console.log('pressed any key', code);
     });
-    scene.onKeyDown(ENGINE.KEYS.KEY_DOWN,function(){
-        ship._velocityObj.value = 0.1;
-        ship._velocityObj.angle = Math.PI/2;
-    });
-    scene.onKeyDown(ENGINE.KEYS.KEY_UP,function(){
-        ship._velocityObj.value = 0.1;
-        ship._velocityObj.angle = -Math.PI/2;
-    });
-    scene.onKeyDown(ENGINE.KEYS.KEY_LEFT,function(){
-        ship._velocityObj.value = 0.1;
-        ship._velocityObj.angle = Math.PI;
-    });
-    scene.onKeyDown(ENGINE.KEYS.KEY_RIGHT,function(){
-        ship._velocityObj.value = 0.1;
-        ship._velocityObj.angle = 0;
-    });
-    ENGINE.SceneManager.onComplete(function() {
-        ship.setPos(120,330,1000,function(){console.log('event end')},ENGINE.EaseFunctions.LINEAR);
+    scene.
+            onKeyDown(ENGINE.KEYS.KEY_DOWN,function () {
+                ship.walkDown(0.1);
+            }).onKeyUp(ENGINE.KEYS.KEY_DOWN, function () {
+                ship.walkStop();
+            });
 
+    scene.
+            onKeyDown(ENGINE.KEYS.KEY_UP,function () {
+                ship.walkUp(0.1);
+            }).onKeyUp(ENGINE.KEYS.KEY_UP, function () {
+                ship.walkStop();
+            });
+
+    scene.
+            onKeyDown(ENGINE.KEYS.KEY_LEFT,function () {
+                ship.walkLeft(0.1);
+            }).onKeyUp(ENGINE.KEYS.KEY_LEFT, function () {
+                ship.walkStop();
+            });
+
+    scene.
+            onKeyDown(ENGINE.KEYS.KEY_RIGHT,function () {
+                ship.walkRight(0.1);
+            }).onKeyUp(ENGINE.KEYS.KEY_RIGHT, function () {
+                ship.walkStop();
+            });
+
+    ENGINE.SceneManager.onComplete(function () {
+        //ship.setPos(120,330,1000,function(){console.log('event end')},ENGINE.EaseFunctions.LINEAR);
+        setInterval(function(){
+            particlesEngine.splash(ship.getPosX(),ship.getPosY()+35);
+        },60);
     });
 
 </script>
