@@ -21,7 +21,7 @@
             {
                 strUrl: BASE_URL +'particle.png',
                 scene : scene,
-                compositeOperation: ENGINE.COMPOSITE_OPERATIONS.DESTINATION,
+                compositeOperation: ENGINE.COMPOSITE_OPERATIONS.LIGHTER,
                 force: 5,
                 posDispersion: 0.01,
                 alpha: Math.PI,
@@ -34,30 +34,30 @@
     });
     scene.
             onKeyDown(ENGINE.KEYS.KEY_DOWN,function () {
-                ship.walkDown(0.1);
+                ship.setVy(0.1);
             }).onKeyUp(ENGINE.KEYS.KEY_DOWN, function () {
-                ship.walkStop();
+                ship.setVy(0);
             });
 
     scene.
             onKeyDown(ENGINE.KEYS.KEY_UP,function () {
-                ship.walkUp(0.1);
+                ship.setVy(-0.1);
             }).onKeyUp(ENGINE.KEYS.KEY_UP, function () {
-                ship.walkStop();
+                ship.setVy(0);
             });
 
     scene.
             onKeyDown(ENGINE.KEYS.KEY_LEFT,function () {
-                ship.walkLeft(0.1);
+                ship.setVx(-0.1);
             }).onKeyUp(ENGINE.KEYS.KEY_LEFT, function () {
-                ship.walkStop();
+                ship.setVx(0);
             });
 
     scene.
             onKeyDown(ENGINE.KEYS.KEY_RIGHT,function () {
-                ship.walkRight(0.1);
+                ship.setVx(0.1);
             }).onKeyUp(ENGINE.KEYS.KEY_RIGHT, function () {
-                ship.walkStop();
+                ship.setVx(0);
             });
 
     ENGINE.SceneManager.onComplete(function () {

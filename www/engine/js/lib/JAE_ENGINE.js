@@ -365,25 +365,13 @@ var ENGINE = window.ENGINE || {};
         init:function () {
             this._super();
         },
-        walkDown: function(vel) {
-            this._vx=0;
-            this._vy=vel;
+        setVx: function(vx) {
+            this._vx = vx;
+            return this;
         },
-        walkUp: function(vel) {
-            this._vx=0;
-            this._vy=-vel;
-        },
-        walkLeft: function(vel) {
-            this._vx=-vel;
-            this._vy=0;
-        },
-        walkRight: function(vel) {
-            this._vx=vel;
-            this._vy=0;
-        },
-        walkStop: function() {
-            this._vx=0;
-            this._vy=0;
+        setVy: function(vy) {
+            this._vy = vy;
+            return this;
         }
     });
     ENGINE._BaseObject = ENGINE._MoveableObject.extend({
