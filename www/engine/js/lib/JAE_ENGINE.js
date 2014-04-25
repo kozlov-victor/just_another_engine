@@ -122,10 +122,11 @@ var ENGINE = window.ENGINE || {};
         dispatchMouse:function () {
             var _self = this;
             var objects = ENGINE.SceneManager._currentScene._getObjects();
-            var dispatchOneTouch = function (opName, scrX, scrY, objects) {
+            var dispatchOneTouch = function (opName, scrX, scrY, objects,e) {
                 var x = (scrX - _self.SCREEN_LEFT) * _self.SCALED_FACTOR_X;
                 var y = (scrY - _self.SCREEN_TOP) * _self.SCALED_FACTOR_Y;
                 var engineEvent = {x:x, y:y};
+                engineEvent.info = e.identifier;
                 var currentScene = ENGINE.SceneManager._currentScene;
                 var userFn = '_on' + opName + 'Fn';
                 if (currentScene[userFn]) currentScene[userFn](engineEvent);
@@ -143,23 +144,30 @@ var ENGINE = window.ENGINE || {};
                 e.preventDefault();
                 e.stopPropagation();
                 var scrX, scrY;
+                console.log(e);
                 if (e.touches) {
-                    var touches = e.touches;
+                    var touches;
+                    if (e.touches.length) touches = e.touches;
+                    else touches = e.changedTouches;
                     for (var i = touches.length - 1; i >= 0; i--) {
                         var touch = touches[i];
                         scrX = touch.pageX;
                         scrY = touch.pageY;
-                        dispatchOneTouch(opName, scrX, scrY, objects);
+                        dispatchOneTouch(opName, scrX, scrY, objects,touch);
                     }
                 } else {
-                    scrX = e.pageX;
-                    scrY = e.pageY;
-                    dispatchOneTouch(opName, scrX, scrY, objects);
+                        scrX = e.pageX;
+                        scrY = e.pageY;
+                        dispatchOneTouch(opName, scrX, scrY, objects,touch);
                 }
             }
             // click
             bodyElement.addEventListener(GLOBAL.ACTIONS.START, function (e) {
                 triggerMouseAction(e, 'Click');
+            });
+            // mouseUp
+            bodyElement.addEventListener(GLOBAL.ACTIONS.END, function (e) {
+                triggerMouseAction(e, 'MouseUp');
             });
             // mouseMove
             bodyElement.addEventListener(GLOBAL.ACTIONS.MOVE, function (e) {
@@ -307,6 +315,7 @@ var ENGINE = window.ENGINE || {};
     ENGINE._ClickableObject = ENGINE._KeyPressableObject.extend({
         _onClickFn:null,
         _onMouseMoveFn:null,
+        _onMouseUpFn: null,
         init:function () {
             this._super();
         },
@@ -316,9 +325,13 @@ var ENGINE = window.ENGINE || {};
         onMouseMove:function (__onMouseMoveFn) {
             this._onMouseMoveFn = __onMouseMoveFn;
         },
+        onMouseUp: function(__onMouseUpFn) {
+            this._onMouseUpFn=__onMouseUpFn;
+        },
         _dispatchClick:function (e) {
             // поведение элемента при клике, по умолчанию нет, метод будет переопределяться
         },
+        _dispatchMouseUp:function(e){},
         _dispatchMouseMove:function (e) {
         }
     });
@@ -1314,6 +1327,19 @@ ENGINE.UI = {};
     ENGINE.UI.Button = ENGINE.GameObject.extend({
         init:function (strUrl, scene, options) {
             this._super(strUrl, scene, options);
+            var _self = this;
+            this.onload(function () {
+                var sprWidth = _self._sprite._width;
+                var sprHeight = _self._sprite._height;
+                _self.setFrameSize(sprWidth / 2, sprHeight);
+                _self.setFrameCurrent(0);
+            });
+        },
+        _dispatchClick:function (e) {
+            this.setFrameCurrent(1);
+        },
+        _dispatchMouseUp: function(e) {
+            this.setFrameCurrent(0);
         }
     });
 })();
