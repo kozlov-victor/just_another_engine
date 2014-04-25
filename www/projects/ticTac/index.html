@@ -57,7 +57,9 @@
                 console.log(e);
                 log.setText(''+e.info);
             });
-
+            mainScene.onClick(function(){
+                log.setText('...');
+            });
             ENGINE.SceneManager.onComplete(function () {
                 log.show();
                 function showLogo() {
