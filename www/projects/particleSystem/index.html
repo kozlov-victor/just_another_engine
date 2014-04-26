@@ -45,21 +45,27 @@
         introScene.onMouseMove(function(e){
             particlesGreen.splash(e.x, e.y);
             particlesRed.splash(e.x, e.y);
-            log.setText('mouseMove: '+e.info+' '+new Date().getTime());
+            if (e.info===0) log1.setText('mouseMove: '+e.info+' '+new Date().getTime());
+            else log2.setText('mouseMove: '+e.info+' '+new Date().getTime());
         });
 
 
-        var log = new ENGINE.UI.TextLabel(introScene,"log",true);
+        var log1 = new ENGINE.UI.TextLabel(introScene,"log0",true);
+        var log2 = new ENGINE.UI.TextLabel(introScene,"log1",true);
         introScene.onMouseUp(function(e){
-            log.setText('mouseUp: '+e.info+' '+new Date().getTime());
+            if (e.info===0) log1.setText('mouseUp: '+e.info+' '+new Date().getTime());
+            else log2.setText('mouseUp: '+e.info+' '+new Date().getTime());
+
         });
         introScene.onClick(function(e){
-            log.setText('mouseClick: '+ e.info+' '+new Date().getTime());
+            if (e.info===0) log1.setText('mouseClick: '+ e.info+' '+new Date().getTime());
+            else log2.setText('mouseClick: '+ e.info+' '+new Date().getTime());
         });
 
         var intro = {
             runIntro: function() {
-                log.show();
+                log1.show();
+                log2.setPosY(30).show();
                 lbl.setCompositeOperation(ENGINE.COMPOSITE_OPERATIONS.SCREEN);
                 lbl.scale(10,1000).rotate(360,5000,null,ENGINE.EaseFunctions.EASE_OUT_ELASTIC);
                 lbl.centrate().show(1000);
