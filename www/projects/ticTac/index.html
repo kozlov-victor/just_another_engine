@@ -51,17 +51,12 @@
             var txtLabel = new ENGINE.UI.TextLabel(mainScene,"Легко");
             txtLabel.setFontScale(0.7);
             mainScene.setBackGroundColor(0, 12, 0);
-            //
-            var log = new ENGINE.UI.TextLabel(mainScene,"log",true);
-            mainScene.onMouseUp(function(e){
-                console.log(e);
-                log.setText('mouseUp: '+e.info+' '+new Date().getTime());
+
+            btnPlay.onMouseLeave(function(e){
+                console.log('leave',e);
             });
-            mainScene.onClick(function(e){
-                log.setText('mouseClick: '+ e.info+' '+new Date().getTime());
-            });
+
             ENGINE.SceneManager.onComplete(function () {
-                log.show();
                 function showLogo() {
                     obj_logo.centrate(500,function(){console.log('centrating...')},ENGINE.EaseFunctions.EASE_IN_OUT_BACK);
                     mainScene.createKeyFrames().
@@ -99,9 +94,6 @@
                             addKeyFrame(400, ui_lbl_hard,ui_lbl_hard.show, [500]).
                             addKeyFrame(400, ui_lbl_hard,ui_lbl_hard.setPosX, [40, 500, null, ENGINE.EaseFunctions.EASE_IN_EXPO]).
                             run();
-                    btnPlay.onMouseUp(function(e){
-                        log.setText('123');
-                    });
                 }
 
                 btnBack.onClick(function(){

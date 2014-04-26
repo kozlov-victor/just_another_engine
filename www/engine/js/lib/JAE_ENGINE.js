@@ -137,6 +137,24 @@ var ENGINE = window.ENGINE || {};
                         var defaultFn = '_dispatch' + opName;
                         obj[defaultFn](engineEvent);
                         if (obj[userFn]) obj[userFn](engineEvent);
+                        // check for mouseEnter
+                        if (opName=='MouseMove') {
+                            if (obj._isMouseEnter==false) {
+                                obj._isMouseEnter=true;
+                                if (obj._onMouseEnterFn) obj._onMouseEnterFn(engineEvent);
+                            }
+                        }
+                    } else {
+                        // check for mouseLeave
+                        if (opName=='MouseMove') {
+                            if (obj._isMouseEnter==true) {
+                                obj._isMouseEnter=false;
+                                obj._dispatchMouseLeave(e);
+                                if (obj._onMouseLeaveFn) {
+                                    obj._onMouseLeaveFn(engineEvent);
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -144,7 +162,6 @@ var ENGINE = window.ENGINE || {};
                 e.preventDefault();
                 e.stopPropagation();
                 var scrX, scrY;
-                console.log(e);
                 if (e.touches) {
                     var touches;
                     if (e.touches.length) touches = e.touches;
@@ -316,6 +333,9 @@ var ENGINE = window.ENGINE || {};
         _onClickFn:null,
         _onMouseMoveFn:null,
         _onMouseUpFn: null,
+        _onMouseEnterFn: null,
+        _onMouseLeaveFn: null,
+        _isMouseEnter: false,
         init:function () {
             this._super();
         },
@@ -328,12 +348,19 @@ var ENGINE = window.ENGINE || {};
         onMouseUp: function(__onMouseUpFn) {
             this._onMouseUpFn=__onMouseUpFn;
         },
+        onMouseEnter: function(__onMouseEnterFn) {
+            this._onMouseEnterFn=__onMouseEnterFn;
+        },
+        onMouseLeave: function(__onMouseLeaveFn) {
+            this._onMouseLeaveFn = __onMouseLeaveFn;
+        },
         _dispatchClick:function (e) {
             // поведение элемента при клике, по умолчанию нет, метод будет переопределяться
         },
         _dispatchMouseUp:function(e){},
-        _dispatchMouseMove:function (e) {
-        }
+        _dispatchMouseMove:function (e) {},
+        _dispatchMouseEnter: function(e) {},
+        _dispatchMouseLeave: function(e) {}
     });
     ENGINE._ScalableObject = ENGINE._ClickableObject.extend({
         _angle:null,
@@ -1339,6 +1366,9 @@ ENGINE.UI = {};
             this.setFrameCurrent(1);
         },
         _dispatchMouseUp: function(e) {
+            this.setFrameCurrent(0);
+        },
+        _dispatchMouseLeave: function(e) {
             this.setFrameCurrent(0);
         }
     });
