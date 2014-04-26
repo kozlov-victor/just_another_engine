@@ -55,10 +55,10 @@
             //
             mainScene.onMouseUp(function(e){
                 console.log(e);
-                log.setText(''+e.info);
+                log.setText(''+e.info+' '+new Date().getTime());
             });
             mainScene.onClick(function(e){
-                log.setText('...e'+ e.info);
+                log.setText('...e'+ e.info+' '+new Date().getTime());
             });
             ENGINE.SceneManager.onComplete(function () {
                 log.show();
