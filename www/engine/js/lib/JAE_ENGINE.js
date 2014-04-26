@@ -122,11 +122,10 @@ var ENGINE = window.ENGINE || {};
         dispatchMouse:function () {
             var _self = this;
             var objects = ENGINE.SceneManager._currentScene._getObjects();
-            var dispatchOneTouch = function (opName, scrX, scrY, objects,e) {
+            var dispatchOneTouch = function (opName, scrX, scrY, objects,touch) {
                 var x = (scrX - _self.SCREEN_LEFT) * _self.SCALED_FACTOR_X;
                 var y = (scrY - _self.SCREEN_TOP) * _self.SCALED_FACTOR_Y;
                 var engineEvent = {x:x, y:y};
-                engineEvent.info = e.identifier;
                 var currentScene = ENGINE.SceneManager._currentScene;
                 var userFn = '_on' + opName + 'Fn';
                 if (currentScene[userFn]) currentScene[userFn](engineEvent);
@@ -149,7 +148,7 @@ var ENGINE = window.ENGINE || {};
                         if (opName=='MouseMove') {
                             if (obj._isMouseEnter==true) {
                                 obj._isMouseEnter=false;
-                                obj._dispatchMouseLeave(e);
+                                obj._dispatchMouseLeave(engineEvent);
                                 if (obj._onMouseLeaveFn) {
                                     obj._onMouseLeaveFn(engineEvent);
                                 }
@@ -192,22 +191,25 @@ var ENGINE = window.ENGINE || {};
             });
             return this;
         },
+        _dispatchOneKey: function(objToInvoke,keyCode) {
+            if (objToInvoke[keyCode]) objToInvoke[keyCode](keyCode);
+            if (objToInvoke[ANY_KEY]) objToInvoke[ANY_KEY](keyCode);
+        },
         dispatchKeyboard:function () {
             // key events
             var keyHolds = {};
+            var _self = this;
             bodyElement.addEventListener('keydown', function (e) {
                 var objToInvoke = ENGINE.SceneManager._currentScene._onKeyDownObj;
                 var keyCode = e.keyCode;
                 if (keyHolds[keyCode]) return;
-                if (objToInvoke[keyCode]) objToInvoke[keyCode](keyCode);
-                if (objToInvoke[ANY_KEY]) objToInvoke[ANY_KEY](keyCode);
+                _self._dispatchOneKey(objToInvoke,keyCode);
                 keyHolds[keyCode] = true;
             });
             bodyElement.addEventListener('keyup', function (e) {
                 var objToInvoke = ENGINE.SceneManager._currentScene._onKeyUpObj;
                 var keyCode = e.keyCode;
-                if (objToInvoke[keyCode]) objToInvoke[keyCode](keyCode);
-                if (objToInvoke[ANY_KEY]) objToInvoke[ANY_KEY](keyCode);
+                _self._dispatchOneKey(objToInvoke,keyCode);
                 keyHolds[keyCode] = false;
             });
             return this;
@@ -341,18 +343,23 @@ var ENGINE = window.ENGINE || {};
         },
         onClick:function (__onClickFn) {
             this._onClickFn = __onClickFn;
+            return this;
         },
         onMouseMove:function (__onMouseMoveFn) {
             this._onMouseMoveFn = __onMouseMoveFn;
+            return this;
         },
         onMouseUp: function(__onMouseUpFn) {
             this._onMouseUpFn=__onMouseUpFn;
+            return this;
         },
         onMouseEnter: function(__onMouseEnterFn) {
             this._onMouseEnterFn=__onMouseEnterFn;
+            return this;
         },
         onMouseLeave: function(__onMouseLeaveFn) {
             this._onMouseLeaveFn = __onMouseLeaveFn;
+            return this;
         },
         _dispatchClick:function (e) {
             // поведение элемента при клике, по умолчанию нет, метод будет переопределяться
@@ -414,6 +421,10 @@ var ENGINE = window.ENGINE || {};
             return this;
         }
     });
+
+    // options {
+    //  showEmmediatly: boolean
+    // }
     ENGINE._BaseObject = ENGINE._MoveableObject.extend({
         _scene:null,
         _onloadFn:null,
@@ -1373,4 +1384,44 @@ ENGINE.UI = {};
         }
     });
 })();
+
+ENGINE.GAMEPAD = {};
+
+(function(){
+    var isCreated = false;
+
+    ENGINE.GAMEPAD.init = function(scene) {
+        if (isCreated) return;
+        // local utils
+        var objToInvokeDown = ENGINE.SceneManager._currentScene._onKeyDownObj;
+        var objToInvokeUp = ENGINE.SceneManager._currentScene._onKeyUpObj;
+        var bindToKey = function(button,keyCode) {
+            button.onClick(function(e){
+                ENGINE.SCREEN._dispatchOneKey(objToInvokeDown,keyCode);
+            }).onMouseLeave(function(e){
+                    ENGINE.SCREEN._dispatchOneKey(objToInvokeUp,keyCode);
+                }).onMouseUp(function(e){
+                    ENGINE.SCREEN._dispatchOneKey(objToInvokeUp,keyCode);
+            });
+        }
+        // create
+        var btnUp = new ENGINE.UI.Button(GLOBAL.BASE_URL+'engine/css/images/up.png',scene);
+        var btnRight = new ENGINE.UI.Button(GLOBAL.BASE_URL+'engine/css/images/right.png',scene);
+        var btnDown = new ENGINE.UI.Button(GLOBAL.BASE_URL+'engine/css/images/down.png',scene);
+        var btnLeft = new ENGINE.UI.Button(GLOBAL.BASE_URL+'engine/css/images/left.png',scene);
+        // bind
+        bindToKey(btnUp,ENGINE.KEYS.KEY_UP);
+        bindToKey(btnRight,ENGINE.KEYS.KEY_RIGHT);
+        bindToKey(btnDown,ENGINE.KEYS.KEY_DOWN);
+        bindToKey(btnLeft,ENGINE.KEYS.KEY_LEFT);
+        // locate
+        btnUp.setPos(50,350).show();
+        btnRight.setPos(100,400).show();
+        btnDown.setPos(50,450).show();
+        btnLeft.setPos(0,400).show();
+    }
+
+})();
+
+
 

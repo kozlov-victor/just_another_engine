@@ -52,9 +52,7 @@
             txtLabel.setFontScale(0.7);
             mainScene.setBackGroundColor(0, 12, 0);
 
-            btnPlay.onMouseLeave(function(e){
-                console.log('leave',e);
-            });
+
 
             ENGINE.SceneManager.onComplete(function () {
                 function showLogo() {
@@ -94,6 +92,10 @@
                             addKeyFrame(400, ui_lbl_hard,ui_lbl_hard.show, [500]).
                             addKeyFrame(400, ui_lbl_hard,ui_lbl_hard.setPosX, [40, 500, null, ENGINE.EaseFunctions.EASE_IN_EXPO]).
                             run();
+
+                    btnPlay.onMouseLeave(function(e){
+                        showGame();
+                    });
                 }
 
                 btnBack.onClick(function(){

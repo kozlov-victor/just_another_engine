@@ -16,6 +16,7 @@
     var BASE_URL = GLOBAL.BASE_URL + 'projects/spaceShooter/res/';
 
     var scene = new ENGINE.Scene();
+    ENGINE.GAMEPAD.init(scene);
     var ship = new ENGINE.GameObject(BASE_URL + 'ship.png', scene, {showEmmediatly:1});
     var particlesEngine = new ENGINE.ParticleSystem(
             {
@@ -61,7 +62,6 @@
             });
 
     ENGINE.SceneManager.onComplete(function () {
-        //ship.setPos(120,330,1000,function(){console.log('event end')},ENGINE.EaseFunctions.LINEAR);
         setInterval(function(){
             particlesEngine.splash(ship.getPosX(),ship.getPosY()+35);
         },60);
