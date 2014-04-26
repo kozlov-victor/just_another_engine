@@ -140,6 +140,7 @@ var ENGINE = window.ENGINE || {};
                         if (opName=='MouseMove') {
                             if (obj._isMouseEnter==false) {
                                 obj._isMouseEnter=true;
+                                console.log('mouse entered sprite')
                                 if (obj._onMouseEnterFn) obj._onMouseEnterFn(engineEvent);
                             }
                         }
@@ -1398,9 +1399,11 @@ ENGINE.GAMEPAD = {};
         var bindToKey = function(button,keyCode) {
             button.onClick(function(e){
                 ENGINE.SCREEN._dispatchOneKey(objToInvokeDown,keyCode);
+            }).onMouseEnter(function(e){
+                    ENGINE.SCREEN._dispatchOneKey(objToInvokeDown,keyCode);
             }).onMouseLeave(function(e){
                     ENGINE.SCREEN._dispatchOneKey(objToInvokeUp,keyCode);
-                }).onMouseUp(function(e){
+            }).onMouseUp(function(e){
                     ENGINE.SCREEN._dispatchOneKey(objToInvokeUp,keyCode);
             });
         }
