@@ -45,7 +45,18 @@
         introScene.onMouseMove(function(e){
             particlesGreen.splash(e.x, e.y);
             particlesRed.splash(e.x, e.y);
+            log.setText('mouseMove: '+e.info+' '+new Date().getTime());
         });
+
+
+        var log = new ENGINE.UI.TextLabel(mainScene,"log",true);
+        introScene.onMouseUp(function(e){
+            log.setText('mouseUp: '+e.info+' '+new Date().getTime());
+        });
+        introScene.onClick(function(e){
+            log.setText('mouseClick: '+ e.info+' '+new Date().getTime());
+        });
+
         var intro = {
             runIntro: function() {
                 lbl.setCompositeOperation(ENGINE.COMPOSITE_OPERATIONS.SCREEN);

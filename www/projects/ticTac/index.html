@@ -50,9 +50,9 @@
             btnBack.setPos(10,250);
             var txtLabel = new ENGINE.UI.TextLabel(mainScene,"Легко");
             txtLabel.setFontScale(0.7);
-            var log = new ENGINE.UI.TextLabel(mainScene,"log",true);
             mainScene.setBackGroundColor(0, 12, 0);
             //
+            var log = new ENGINE.UI.TextLabel(mainScene,"log",true);
             mainScene.onMouseUp(function(e){
                 console.log(e);
                 log.setText('mouseUp: '+e.info+' '+new Date().getTime());
