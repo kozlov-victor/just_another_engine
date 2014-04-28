@@ -166,8 +166,14 @@ var ENGINE = window.ENGINE || {};
                     var touches;
                     if (e.touches.length) touches = e.touches;
                     else touches = e.changedTouches;
-                    for (var i = touches.length - 1; i >= 0; i--) {
-                        var touch = touches[i];
+                    for (var i = e.touches.length - 1; i >= 0; i--) {
+                        var touch = e.touches[i];
+                        scrX = touch.pageX;
+                        scrY = touch.pageY;
+                        dispatchOneTouch(opName, scrX, scrY, objects,touch);
+                    }
+                    for (i = e.changedTouches.length - 1; i >= 0; i--) {
+                        touch = e.changedTouches[i];
                         scrX = touch.pageX;
                         scrY = touch.pageY;
                         dispatchOneTouch(opName, scrX, scrY, objects,touch);
