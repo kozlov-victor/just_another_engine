@@ -167,7 +167,7 @@ var ENGINE = window.ENGINE || {};
                     if (e.touches.length) touches = e.touches;
                     else touches = e.changedTouches;
                     console.log('>>>>>>>>>>>',e);
-                    for (var i = e.touches.length - 1; i >= 0; i--) {
+                    for (var i = e.targetTouches.length - 1; i >= 0; i--) {
                         var touch = e.touches[i];
                         scrX = touch.pageX;
                         scrY = touch.pageY;
