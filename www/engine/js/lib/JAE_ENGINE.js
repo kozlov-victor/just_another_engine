@@ -164,21 +164,21 @@ var ENGINE = window.ENGINE || {};
                 var scrX, scrY;
                 if (e.touches) {
                     var touches;
-                    if (e.touches.length) touches = e.touches;
-                    else touches = e.changedTouches;
+                    /*if (e.touches.length) touches = e.touches;
+                    else touches = e.changedTouches;*/
                     console.log('>>>>>>>>>>>',e);
                     for (var i = e.targetTouches.length - 1; i >= 0; i--) {
-                        var touch = e.touches[i];
+                        var touch = e.targetTouches[i];
                         scrX = touch.pageX;
                         scrY = touch.pageY;
                         dispatchOneTouch(opName, scrX, scrY, objects,touch);
                     }
-                    for (i = e.changedTouches.length - 1; i >= 0; i--) {
+                    /*for (i = e.changedTouches.length - 1; i >= 0; i--) {
                         touch = e.changedTouches[i];
                         scrX = touch.pageX;
                         scrY = touch.pageY;
                         dispatchOneTouch(opName, scrX, scrY, objects,touch);
-                    }
+                    }*/
                 } else {
                         scrX = e.pageX;
                         scrY = e.pageY;
