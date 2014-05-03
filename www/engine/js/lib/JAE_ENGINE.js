@@ -1425,10 +1425,10 @@ ENGINE.GAMEPAD = {};
         bindToKey(btnDown,ENGINE.KEYS.KEY_DOWN);
         bindToKey(btnLeft,ENGINE.KEYS.KEY_LEFT);
         // locate
-        btnUp.setPos(50,350).show();
-        btnRight.setPos(100,400).show();
-        btnDown.setPos(50,450).show();
-        btnLeft.setPos(0,400).show();
+        btnUp.setPos(85,215).show();
+        btnRight.setPos(172,300).show();
+        btnDown.setPos(87,300).show();
+        btnLeft.setPos(0,300).show();
     }
 
 })();
